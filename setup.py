@@ -37,6 +37,8 @@ setup(
                       'libfmp >= 1.1.0, < 2.0.0'],
     python_requires='>=3.6, <=3.8',
     extras_require={
-        'tests': ['pytest == 6.2.*']
+        'tests': ['pytest == 6.2.*'],
+        'docs': ['sphinx == 4.0.*',
+                 'sphinx_rtd_theme == 0.5.*']
     }
 )
