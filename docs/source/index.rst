@@ -12,16 +12,12 @@ The source code for the package SyncToolbox is hosted at GitHub:
 
 https://github.com/meinardmueller/synctoolbox
 
+In particular, please note the provided Readme and the example notebooks.
+
 If you use SyncToolbox in a scholarly work, please consider citing the SyncToolbox article. [#]_
 
 
 .. [#] 2021, Article
-
-.. toctree::
-    :caption: Getting Started
-    :hidden:
-
-    getting_started
 
 .. toctree::
     :caption: API Documentation
