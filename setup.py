@@ -5,7 +5,7 @@ with open('README.md', 'r') as fdesc:
     long_description = fdesc.read()
 
 setup(
-    name='SyncToolbox',
+    name='synctoolbox',
     version='1.0.0',
     description='Python Package for Efficient, Robust, and Accurate Music Synchronization (SyncToolbox)',
     author='Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger',
@@ -35,7 +35,7 @@ setup(
                       'pysoundfile >= 0.9.0, < 1.0.0',
                       'scipy >= 1.3.0, < 2.0.0',
                       'libfmp >= 1.1.0, < 2.0.0'],
-    python_requires='>=3.6, <=3.8',
+    python_requires='>=3.6, <3.9',
     extras_require={
         'tests': ['pytest == 6.2.*'],
         'docs': ['sphinx == 4.0.*',
