@@ -1,0 +1,17 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    "Meinard Müller", "Yigitcan Özer", "Michael Krause", "Thomas Prätzlich", "Jonathan Driedger"
+  ],
+  "identifier": "",
+  "codeRepository": "https://github.com/meinardmueller/synctoolbox",
+  "datePublished": "2021-06-01",
+  "dateModified": "2021-06-01",
+  "dateCreated": "2021-06-01",
+  "description": "synctoolbox is A Python Package for Efficient, Robust, and Accurate Music Synchronization.",
+  "keywords": "Python, Music information retrieval, Music synchronization",
+  "license": "MIT",
+  "title": "synctoolbox",
+  "version": "1.0.0"
+}
