@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Dynamic Time Warping (synctoolbox.dtw) &mdash; SyncToolbox 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Feature Extraction (synctoolbox.feature)" href="feature/index.html" />
+    <link rel="prev" title="Getting Started" href="getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/audiolabs.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dynamic Time Warping (synctoolbox.dtw)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feature/index.html">Feature Extraction (synctoolbox.feature)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SyncToolbox</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Dynamic Time Warping (synctoolbox.dtw)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/dtw.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-synctoolbox.dtw.core">
+<span id="dynamic-time-warping-synctoolbox-dtw"></span><h1>Dynamic Time Warping (synctoolbox.dtw)<a class="headerlink" href="#module-synctoolbox.dtw.core" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="synctoolbox.dtw.core.compute_warping_path">
+<span class="sig-prename descclassname"><span class="pre">synctoolbox.dtw.core.</span></span><span class="sig-name descname"><span class="pre">compute_warping_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_sizes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([[1,</span> <span class="pre">0],</span> <span class="pre">[0,</span> <span class="pre">1],</span> <span class="pre">[1,</span> <span class="pre">1]],</span> <span class="pre">np.int64)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0],</span> <span class="pre">np.float64)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">implementation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'synctoolbox'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/synctoolbox/dtw/core.html#compute_warping_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.dtw.core.compute_warping_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies DTW on cost matrix C.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>C</strong> (<em>np.ndarray (np.float32 / np.float64) [shape=(N, M)]</em>) – Cost matrix</p></li>
+<li><p><strong>step_sizes</strong> (<em>np.ndarray (np.int64) [shape=(2, S)]</em>) – Array of step sizes</p></li>
+<li><p><strong>step_weights</strong> (<em>np.ndarray (np.float64) [shape=(2, S)]</em>) – Array of step weights</p></li>
+<li><p><strong>implementation</strong> (<em>str</em>) – Choose among <code class="docutils literal notranslate"><span class="pre">synctoolbox</span></code> and <code class="docutils literal notranslate"><span class="pre">librosa</span></code>. (default: <code class="docutils literal notranslate"><span class="pre">synctoolbox</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>D</strong> (<em>np.ndarray (np.float64) [shape=(N, M)]</em>) – Accumulated cost matrix</p></li>
+<li><p><strong>E</strong> (<em>np.ndarray (np.int64) [shape=(N, M)]</em>) – Step index matrix</p></li>
+<li><p><strong>wp</strong> (<em>np.ndarray (np.int64) [shape=(2, M)]</em>) – Warping path</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-synctoolbox.dtw.mrmsdtw"></span><dl class="py function">
+<dt class="sig sig-object py" id="synctoolbox.dtw.mrmsdtw.sync_via_mrmsdtw">
+<span class="sig-prename descclassname"><span class="pre">synctoolbox.dtw.mrmsdtw.</span></span><span class="sig-name descname"><span class="pre">sync_via_mrmsdtw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_chroma1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_chroma2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_DLNCO1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_DLNCO2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_sizes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([[1,</span> <span class="pre">0],</span> <span class="pre">[0,</span> <span class="pre">1],</span> <span class="pre">[1,</span> <span class="pre">1]],</span> <span class="pre">np.int32)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0],</span> <span class="pre">np.float64)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_rec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win_len_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([201,</span> <span class="pre">101,</span> <span class="pre">21,</span> <span class="pre">1])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsamp_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([50,</span> <span class="pre">25,</span> <span class="pre">5,</span> <span class="pre">1])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtw_implementation</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'synctoolbox'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_chroma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroma_norm_ord</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroma_norm_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/synctoolbox/dtw/mrmsdtw.html#sync_via_mrmsdtw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.dtw.mrmsdtw.sync_via_mrmsdtw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) DLNCO features.
+MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
+regions defined by the alignment found on the previous, coarser level.
+If DLNCO features are provided, these are used on the finest level in addition to chroma
+to provide higher synchronization accuracy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_chroma1</strong> (<em>np.ndarray [shape=(12, N)]</em>) – Chroma feature matrix of the first sequence</p></li>
+<li><p><strong>f_chroma2</strong> (<em>np.ndarray [shape=(12, M)]</em>) – Chroma feature matrix of the second sequence</p></li>
+<li><p><strong>f_DLNCO1</strong> (<em>np.ndarray [shape=(12, N)]</em>) – DLNCO feature matrix of the first sequence (optional, default: None)</p></li>
+<li><p><strong>f_DLNCO2</strong> (<em>np.ndarray [shape=(12, M)]</em>) – DLNCO feature matrix of the second sequence (optional, default: None)</p></li>
+<li><p><strong>input_feature_rate</strong> (<em>float</em>) – Input feature rate of the chroma features (default: 50)</p></li>
+<li><p><strong>step_sizes</strong> (<em>np.ndarray</em>) – DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))</p></li>
+<li><p><strong>step_weights</strong> (<em>np.ndarray</em>) – DTW step weights (np.array([1.0, 1.0, 1.0]))</p></li>
+<li><p><strong>threshold_rec</strong> (<em>int</em>) – Defines the maximum area that is spanned by the rectangle of two
+consecutive elements in the alignment (default: 10000)</p></li>
+<li><p><strong>win_len_smooth</strong> (<em>np.ndarray</em>) – Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))</p></li>
+<li><p><strong>downsamp_smooth</strong> (<em>np.ndarray</em>) – Downsampling factors (default: np.array([50, 25, 5, 1]))</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Set <cite>True</cite> for visualization (default: False)</p></li>
+<li><p><strong>dtw_implementation</strong> (<em>str</em>) – DTW implementation, librosa or synctoolbox (default: synctoolbox)</p></li>
+<li><p><strong>normalize_chroma</strong> (<em>bool</em>) – Set <cite>True</cite> to normalize input chroma features after each downsampling
+and smoothing operation.</p></li>
+<li><p><strong>chroma_norm_ord</strong> (<em>int</em>) – Order of chroma normalization, relevant if <code class="docutils literal notranslate"><span class="pre">normalize_chroma</span></code> is True.
+(default: 2)</p></li>
+<li><p><strong>chroma_norm_threshold</strong> (<em>float</em>) – If the norm falls below threshold for a feature vector, then the
+normalized feature vector is set to be the unit vector. Relevant, if
+<code class="docutils literal notranslate"><span class="pre">normalize_chroma</span></code> is True (default: 0.001)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>alignment</strong> (<em>np.ndarray [shape=(2, T)]</em>) – Resulting warping path</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="feature/index.html" class="btn btn-neutral float-right" title="Feature Extraction (synctoolbox.feature)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

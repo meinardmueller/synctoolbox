@@ -1,0 +1,428 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>synctoolbox.feature.chroma &mdash; SyncToolbox 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/audiolabs.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../feature/index.html">Feature Extraction (synctoolbox.feature)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../py-modindex.html">Module Index</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SyncToolbox</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>synctoolbox.feature.chroma</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for synctoolbox.feature.chroma</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">synctoolbox.feature.utils</span> <span class="kn">import</span> <span class="n">smooth_downsample_feature</span><span class="p">,</span> <span class="n">normalize_feature</span>
+
+
+<div class="viewcode-block" id="pitch_to_CENS"><a class="viewcode-back" href="../../../feature/chroma.html#synctoolbox.feature.chroma.pitch_to_CENS">[docs]</a><span class="k">def</span> <span class="nf">pitch_to_CENS</span><span class="p">(</span><span class="n">f_pitch</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                  <span class="n">input_feature_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                  <span class="n">win_len_smooth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="n">downsamp_smooth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="n">quant_steps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span>
+                  <span class="n">quant_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span>
+                  <span class="n">norm_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+                  <span class="n">midi_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
+                  <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">,</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Generate CENS features from pitch features (CENS: Chroma Energy Normalized Statistics).</span>
+
+<span class="sd">    The following is computed:</span>
+
+<span class="sd">        * Energy for each chroma band</span>
+
+<span class="sd">        * l1-normalization of the chroma vectors</span>
+
+<span class="sd">        * Local statistics:</span>
+
+<span class="sd">            + Component-wise quantization of the normalized chroma vectors</span>
+
+<span class="sd">            + Smoothing and downsampling of the feature sequence</span>
+
+<span class="sd">            + l2-normalization of the resulting vectors</span>
+
+<span class="sd">    Individual steps of this procedure can be computed with the remaining functions in this module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f_pitch : np.ndarray [shape=(128, N)]</span>
+<span class="sd">        MIDI pitch-based feature representation, obtained e.g. through ``audio_to_pitch_features``.</span>
+
+<span class="sd">    input_feature_rate: float</span>
+<span class="sd">        Feature rate of the input pitch features ``f_pitch``</span>
+
+<span class="sd">    win_len_smooth : int</span>
+<span class="sd">        Smoothing window length, default: no smoothing</span>
+
+<span class="sd">    downsamp_smooth : int</span>
+<span class="sd">        Downsampling factor, default: no downsampling</span>
+
+<span class="sd">    quant_steps : np.ndarray</span>
+<span class="sd">        After l1-normalization, all entries are quantized into bins defined by these boundaries.</span>
+<span class="sd">        The default values correspond to the standard definition of CENS features.</span>
+
+<span class="sd">    quant_weights : np.ndarray</span>
+<span class="sd">        The individual quantization bins can be given weights. Default is equal weight for all bins.</span>
+
+<span class="sd">    norm_thresh : float</span>
+<span class="sd">        For l1-normalization, chroma entries below this threshold are considered</span>
+<span class="sd">        as noise and set to 0.</span>
+<span class="sd">        For l2-normalization, chroma vectors with norm below this threshold</span>
+<span class="sd">        are replaced with uniform vectors.</span>
+
+<span class="sd">    midi_min : int</span>
+<span class="sd">        Minimum MIDI pitch index to consider (default: 21)</span>
+
+<span class="sd">    midi_max : int</span>
+<span class="sd">        Maximum MIDI pitch index to consider (default: 108)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_CENS: np.ndarray</span>
+<span class="sd">        CENS (Chroma Energy Normalized Statistics) features</span>
+
+<span class="sd">    CENS_feature_rate: float</span>
+<span class="sd">        Feature rate of the CENS features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Pitch to chroma features</span>
+    <span class="n">f_chroma</span> <span class="o">=</span> <span class="n">pitch_to_chroma</span><span class="p">(</span><span class="n">f_pitch</span><span class="o">=</span><span class="n">f_pitch</span><span class="p">,</span>
+                               <span class="n">midi_min</span><span class="o">=</span><span class="n">midi_min</span><span class="p">,</span>
+                               <span class="n">midi_max</span><span class="o">=</span><span class="n">midi_max</span><span class="p">)</span>
+
+    <span class="c1"># Quantize chroma features</span>
+    <span class="n">f_chroma_quantized</span> <span class="o">=</span> <span class="n">quantize_chroma</span><span class="p">(</span><span class="n">f_chroma</span><span class="o">=</span><span class="n">f_chroma</span><span class="p">,</span>
+                                         <span class="n">quant_steps</span><span class="o">=</span><span class="n">quant_steps</span><span class="p">,</span>
+                                         <span class="n">quant_weights</span><span class="o">=</span><span class="n">quant_weights</span><span class="p">,</span>
+                                         <span class="n">norm_thresh</span><span class="o">=</span><span class="n">norm_thresh</span><span class="p">)</span>
+
+    <span class="c1"># Temporal smoothing and downsampling</span>
+    <span class="n">f_CENS</span><span class="p">,</span> <span class="n">CENS_feature_rate</span> <span class="o">=</span> <span class="n">quantized_chroma_to_CENS</span><span class="p">(</span><span class="n">f_chroma_quantized</span><span class="p">,</span>
+                                                         <span class="n">win_len_smooth</span><span class="p">,</span>
+                                                         <span class="n">downsamp_smooth</span><span class="p">,</span>
+                                                         <span class="n">input_feature_rate</span><span class="p">,</span>
+                                                         <span class="n">norm_thresh</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">f_CENS</span><span class="p">,</span> <span class="n">CENS_feature_rate</span></div>
+
+
+<div class="viewcode-block" id="quantized_chroma_to_CENS"><a class="viewcode-back" href="../../../feature/chroma.html#synctoolbox.feature.chroma.quantized_chroma_to_CENS">[docs]</a><span class="k">def</span> <span class="nf">quantized_chroma_to_CENS</span><span class="p">(</span><span class="n">f_chroma_quantized</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                             <span class="n">win_len_smooth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">downsamp_smooth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">input_feature_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                             <span class="n">norm_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Smooths, downsamples, and normalizes a chroma sequence obtained e.g. through ``quantize_chroma``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f_chroma_quantized: np.ndarray [shape=(12, N)]</span>
+<span class="sd">        Quantized chroma representation</span>
+
+<span class="sd">    win_len_smooth : int</span>
+<span class="sd">        Smoothing window length. Setting this to 0 applies no smoothing.</span>
+
+<span class="sd">    downsamp_smooth : int</span>
+<span class="sd">        Downsampling factor. Setting this to 1 applies no downsampling.</span>
+
+<span class="sd">    input_feature_rate: float</span>
+<span class="sd">        Feature rate of ``f_chroma_quantized``</span>
+
+<span class="sd">    norm_thresh : float</span>
+<span class="sd">        For the final l2-normalization, chroma vectors with norm below this threshold</span>
+<span class="sd">        are replaced with uniform vectors.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_CENS: np.ndarray</span>
+<span class="sd">        CENS (Chroma Energy Normalized Statistics) features</span>
+
+<span class="sd">    CENS_feature_rate: float</span>
+<span class="sd">        Feature rate of the CENS features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Temporal smoothing and downsampling</span>
+    <span class="n">f_chroma_energy_stat</span><span class="p">,</span> <span class="n">CENSfeature_rate</span> <span class="o">=</span> <span class="n">smooth_downsample_feature</span><span class="p">(</span><span class="n">f_feature</span><span class="o">=</span><span class="n">f_chroma_quantized</span><span class="p">,</span>
+                                                                       <span class="n">win_len_smooth</span><span class="o">=</span><span class="n">win_len_smooth</span><span class="p">,</span>
+                                                                       <span class="n">downsamp_smooth</span><span class="o">=</span><span class="n">downsamp_smooth</span><span class="p">,</span>
+                                                                       <span class="n">input_feature_rate</span><span class="o">=</span><span class="n">input_feature_rate</span><span class="p">)</span>
+
+    <span class="c1"># Last step: normalize each vector with its L2 norm</span>
+    <span class="n">f_CENS</span> <span class="o">=</span> <span class="n">normalize_feature</span><span class="p">(</span><span class="n">feature</span><span class="o">=</span><span class="n">f_chroma_energy_stat</span><span class="p">,</span> <span class="n">norm_ord</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">norm_thresh</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">f_CENS</span><span class="p">,</span> <span class="n">CENSfeature_rate</span></div>
+
+
+<div class="viewcode-block" id="quantize_chroma"><a class="viewcode-back" href="../../../feature/chroma.html#synctoolbox.feature.chroma.quantize_chroma">[docs]</a><span class="k">def</span> <span class="nf">quantize_chroma</span><span class="p">(</span><span class="n">f_chroma</span><span class="p">,</span>
+                    <span class="n">quant_steps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span>
+                    <span class="n">quant_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="n">norm_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Computes thresholded l1-normalization of the chroma vectors and then applies</span>
+<span class="sd">    component-wise quantization of the normalized chroma vectors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f_chroma: np.ndarray [shape=(12, N)]</span>
+<span class="sd">        Chroma representation</span>
+
+<span class="sd">    quant_steps : np.ndarray</span>
+<span class="sd">        After l1-normalization, all entries are quantized into bins defined by these boundaries.</span>
+<span class="sd">        The default values correspond to the standard definition of CENS features.</span>
+
+<span class="sd">    quant_weights : np.ndarray</span>
+<span class="sd">        The individual quantization bins can be given weights. Default is equal weight for all bins.</span>
+
+<span class="sd">    norm_thresh : float</span>
+<span class="sd">        For l1-normalization, chroma entries below this threshold are considered</span>
+<span class="sd">        as noise and set to 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_chroma_quantized: np.ndarray [shape=(12, N)]</span>
+<span class="sd">        Quantized chroma representation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f_chroma_energy_distr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">12</span><span class="p">,</span> <span class="n">f_chroma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="c1"># Thresholded l1-normalization</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">f_chroma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f_chroma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">norm_thresh</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">seg_energy_square</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f_chroma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span>
+            <span class="n">f_chroma_energy_distr</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_chroma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="n">seg_energy_square</span>
+
+    <span class="c1"># component-wise quantization of the normalized chroma vectors</span>
+    <span class="n">f_chroma_quantized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">12</span><span class="p">,</span> <span class="n">f_chroma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">quant_steps</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">f_chroma_quantized</span> <span class="o">+=</span> <span class="p">(</span><span class="n">f_chroma_energy_distr</span> <span class="o">&gt;</span> <span class="n">quant_steps</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="o">*</span> <span class="n">quant_weights</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">f_chroma_quantized</span></div>
+
+
+<div class="viewcode-block" id="pitch_to_chroma"><a class="viewcode-back" href="../../../feature/chroma.html#synctoolbox.feature.chroma.pitch_to_chroma">[docs]</a><span class="k">def</span> <span class="nf">pitch_to_chroma</span><span class="p">(</span><span class="n">f_pitch</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                    <span class="n">midi_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
+                    <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Aggregate pitch-based features into chroma bands.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f_pitch : np.ndarray [shape=(128, N)]</span>
+<span class="sd">        MIDI pitch-based feature representation, obtained e.g. through</span>
+<span class="sd">        ``audio_to_pitch_features``.</span>
+
+<span class="sd">    midi_min : int</span>
+<span class="sd">        Minimum MIDI pitch index to consider (default: 21)</span>
+
+<span class="sd">    midi_max : int</span>
+<span class="sd">        Maximum MIDI pitch index to consider (default: 108)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_chroma: np.ndarray [shape=(12, N)]</span>
+<span class="sd">        Rows of &#39;f_pitch&#39; between ``midi_min`` and ``midi_max``,</span>
+<span class="sd">        aggregated into chroma bands.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f_chroma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">12</span><span class="p">,</span> <span class="n">f_pitch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">chroma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="n">f_chroma</span><span class="p">[</span><span class="n">chroma</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">f_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">f_chroma</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

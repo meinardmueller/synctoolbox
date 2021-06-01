@@ -1,0 +1,541 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>synctoolbox.feature.pitch_onset &mdash; SyncToolbox 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/audiolabs.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../feature/index.html">Feature Extraction (synctoolbox.feature)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../py-modindex.html">Module Index</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SyncToolbox</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>synctoolbox.feature.pitch_onset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for synctoolbox.feature.pitch_onset</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">libfmp.b</span> <span class="kn">import</span> <span class="n">compressed_gray_cmap</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+
+<span class="kn">from</span> <span class="nn">synctoolbox.feature.filterbank</span> <span class="kn">import</span> <span class="n">generate_list_of_downsampled_audio</span><span class="p">,</span> <span class="n">get_fs_index</span><span class="p">,</span> <span class="n">filtfilt_matlab</span><span class="p">,</span> <span class="n">generate_filterbank</span>
+
+<span class="n">EPS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+<span class="c1"># Setting parameters #</span>
+<span class="c1">######################</span>
+<span class="c1"># Parameters for energy curves</span>
+<span class="c1"># Fs = 22050, window size 101/22050: 4.6 ms</span>
+<span class="c1">#             down_step: 50/22050: 2.3 ms</span>
+<span class="c1">#             22050/50: 441,</span>
+<span class="c1"># TODO:</span>
+<span class="c1">#               samples ist kein guter Begriff hier,</span>
+<span class="c1">#               weil überlagert mit dem PCM Sample Begriff</span>
+<span class="c1">#</span>
+<span class="c1"># Fs = 4410, window size 41/4410: 9.3 ms</span>
+<span class="c1">#            down_step: 10/4410: 2.3 ms</span>
+<span class="c1">#            4410/10: 441</span>
+<span class="c1">#</span>
+<span class="c1"># Fs = 882, window size 21/882: 23.8 ms</span>
+<span class="c1">#            down_step: 10/882: 11.3 ms</span>
+<span class="c1">#            882/10: 88.2</span>
+
+<span class="n">WINDOW_SIZE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">101</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">DOWNSAMPLING_FACTORS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">CUT_OFF</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">DOWNSAMPLING_FACTORS</span>
+<span class="n">CUT_OFF</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">RES_FAC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">250</span><span class="p">])</span>
+<span class="n">WINDOW_LENGTHS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>  <span class="c1"># window lengths for local maximum</span>
+
+
+<div class="viewcode-block" id="audio_to_pitch_onset_features"><a class="viewcode-back" href="../../../feature/pitch_onset.html#synctoolbox.feature.pitch_onset.audio_to_pitch_onset_features">[docs]</a><span class="k">def</span> <span class="nf">audio_to_pitch_onset_features</span><span class="p">(</span><span class="n">f_audio</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                  <span class="n">Fs</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">22050</span><span class="p">,</span>
+                                  <span class="n">midi_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
+                                  <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">,</span>
+                                  <span class="n">tuning_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">manual_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span>
+                                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Computes pitch onset features based on an IIR filterbank. The signal is decomposed</span>
+<span class="sd">    into subbands that correspond to MIDI pitches between midi_min and midi_max.</span>
+<span class="sd">    After that, onsets for each MIDI pitch are calculated.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f_audio : np.ndarray</span>
+<span class="sd">        One dimensional audio array (mono)</span>
+
+<span class="sd">    Fs : float</span>
+<span class="sd">        Sampling rate of ``f_audio`` (in Hz)</span>
+
+<span class="sd">    midi_min : int</span>
+<span class="sd">        Minimum MIDI index (indices below ``midi_min`` are filled with zero in the output)</span>
+
+<span class="sd">    midi_max : int</span>
+<span class="sd">        Maximum MIDI index (indices above ``midi_max`` are filled with zero in the output)</span>
+
+<span class="sd">    tuning_offset : float</span>
+<span class="sd">        Tuning offset used to shift the filterbank (in cents)</span>
+
+<span class="sd">    manual_offset : int</span>
+<span class="sd">        Offset applied to all onsets (in ms). The procedure in this function finds</span>
+<span class="sd">        onsets by looking at peaks, i.e., positions of maximum increase in energy.</span>
+<span class="sd">        However, the actual onsets usually happen before such a peak (prior to the</span>
+<span class="sd">        maximum increase in energy). Thus, an offset is applied to all onset</span>
+<span class="sd">        positions. The default (-25ms) has been found to work well empirically.</span>
+
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Set `True` to activate the visualization of features</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_peaks : dict</span>
+<span class="sd">        A dictionary of onset peaks:</span>
+<span class="sd">            * Each key corresponds to the midi pitch number</span>
+<span class="sd">            * Each value f_peaks[midi_pitch] is an array of doubles of size 2xN:</span>
+<span class="sd">                * First row give the positions of the peaks in milliseconds.</span>
+<span class="sd">                * Second row contains the corresponding magnitudes of the peaks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generating filterbank...&quot;</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">generate_filterbank</span><span class="p">(</span><span class="n">semitone_offset_cents</span><span class="o">=</span><span class="n">tuning_offset</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Downsampling signal...&quot;</span><span class="p">)</span>
+    <span class="n">wav_ds</span> <span class="o">=</span> <span class="n">generate_list_of_downsampled_audio</span><span class="p">(</span><span class="n">f_audio</span><span class="p">)</span>
+
+    <span class="c1"># in peak picking for fs=22050, fs=4410, fs=882</span>
+    <span class="c1"># Compute peak features for all pitches</span>
+    <span class="c1"># (only pitches and harmonics occurring in the input MIDI are considered)</span>
+    <span class="c1"># - due to memory requirements, we do note save f_filtfilt and f_onset</span>
+    <span class="c1"># - threshold for peak picking is set to 2/3 of some local maximum</span>
+    <span class="c1"># - all peaks are given with respect to fs = 22050</span>
+
+    <span class="n">f_peaks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="c1"># Computing f_onset and f_peaks for all pitches</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing midi pitches&quot;</span><span class="p">,</span> <span class="n">midi_min</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="n">midi_max</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">midi_pitch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">midi_pitch</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">midi_pitch</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">get_fs_index</span><span class="p">(</span><span class="n">midi_pitch</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+
+        <span class="n">f_filtfilt</span> <span class="o">=</span> <span class="n">filtfilt_matlab</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">wav_ds</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">WINDOW_SIZE</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">DOWNSAMPLING_FACTORS</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># compute local energy curve</span>
+        <span class="n">f_square</span> <span class="o">=</span> <span class="n">f_filtfilt</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="n">ws</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">f_energy</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">upfirdn</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">f_square</span><span class="p">,</span> <span class="n">up</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">down</span><span class="o">=</span><span class="n">ds</span><span class="p">)</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">ws</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ds</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_filtfilt</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">ds</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">f_energy</span> <span class="o">=</span> <span class="n">f_energy</span><span class="p">[</span><span class="n">delay</span><span class="p">:</span> <span class="n">delay</span> <span class="o">+</span> <span class="n">length</span><span class="p">]</span>
+
+        <span class="c1"># further smoothing of the energy curve</span>
+        <span class="k">if</span> <span class="n">CUT_OFF</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">or</span> <span class="n">CUT_OFF</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.98</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cut off frequency too small or too large!&#39;</span><span class="p">)</span>
+
+        <span class="n">Wp</span> <span class="o">=</span> <span class="n">CUT_OFF</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">cheb2ord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">Wp</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="n">Wp</span><span class="o">+</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">cheby2</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;ba&#39;</span><span class="p">)</span>
+        <span class="n">f_energy</span> <span class="o">=</span> <span class="n">filtfilt_matlab</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">f_energy</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="c1"># discrete differentiation and half-wave rectifying</span>
+        <span class="n">f_onset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_energy</span><span class="p">)</span>
+        <span class="n">f_onset</span> <span class="o">*=</span> <span class="n">f_onset</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># compute f_peaks using a local threshold method</span>
+        <span class="c1"># normalization of samples wrt Fs=22050</span>
+        <span class="n">f_len</span> <span class="o">=</span> <span class="n">f_onset</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">win_len</span> <span class="o">=</span> <span class="n">WINDOW_LENGTHS</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">sample_first</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">f_onset</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">sample_first</span> <span class="o">&lt;=</span> <span class="n">f_len</span><span class="p">:</span>
+            <span class="n">sample_last</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">sample_first</span> <span class="o">+</span> <span class="n">win_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">f_len</span><span class="p">)</span>
+            <span class="n">win_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">f_onset</span><span class="p">[</span><span class="n">sample_first</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">sample_last</span><span class="p">])</span>
+            <span class="n">thr</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">win_max</span> <span class="o">/</span> <span class="mi">3</span>
+            <span class="n">thresh</span><span class="p">[</span><span class="n">sample_first</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">sample_last</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">thr</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">sample_last</span><span class="o">-</span><span class="n">sample_first</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">sample_first</span> <span class="o">+=</span> <span class="n">win_len</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">RES_FAC</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">res_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">res</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">time_peaks</span> <span class="o">=</span> <span class="n">__find_peaks</span><span class="p">(</span><span class="n">W</span><span class="o">=</span><span class="n">f_onset</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">abs_thresh</span><span class="o">=</span><span class="n">thresh</span><span class="p">)</span>
+        <span class="n">val_peaks</span> <span class="o">=</span> <span class="n">f_onset</span><span class="p">[</span><span class="n">time_peaks</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)]</span>
+        <span class="n">time_peaks</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_peaks</span> <span class="o">*</span> <span class="n">res</span> <span class="o">-</span> <span class="n">res_center</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="n">Fs</span>
+
+        <span class="k">if</span> <span class="n">manual_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time_peaks</span> <span class="o">+=</span> <span class="n">manual_offset</span>
+            <span class="n">non_negative_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">time_peaks</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">time_peaks</span> <span class="o">=</span> <span class="n">time_peaks</span><span class="p">[</span><span class="n">non_negative_indices</span><span class="p">]</span>
+            <span class="n">val_peaks</span> <span class="o">=</span> <span class="n">val_peaks</span><span class="p">[</span><span class="n">non_negative_indices</span><span class="p">]</span>
+
+        <span class="n">f_peaks</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">time_peaks</span><span class="p">,</span> <span class="n">val_peaks</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">libfmp.b</span> <span class="kn">import</span> <span class="n">plot_matrix</span>
+        <span class="c1"># There are three time resolution: one per sampling rate and window step size. This is the</span>
+        <span class="c1"># highest time resolution that appairs (in sec). A base sampling rate of</span>
+        <span class="c1"># 22050 and downsampling of factor 5 twice is assumed.</span>
+        <span class="n">highest_time_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">DOWNSAMPLING_FACTORS</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Fs</span><span class="p">,</span> <span class="n">Fs</span><span class="o">/</span><span class="mi">5</span><span class="p">,</span> <span class="n">Fs</span><span class="o">/</span><span class="mi">25</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+        <span class="n">time_grid_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">f_audio</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">Fs</span> <span class="o">/</span> <span class="n">highest_time_res</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">num_pitches</span> <span class="o">=</span> <span class="n">midi_max</span> <span class="o">-</span> <span class="n">midi_min</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">imagedata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">time_grid_width</span><span class="p">,</span> <span class="n">num_pitches</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">midi_pitch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">midi_pitch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f_peaks</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MIDI Pitch </span><span class="si">{</span><span class="n">midi_pitch</span><span class="si">}</span><span class="s1"> cannot be found in the input array f_peaks!&#39;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">f_peaks</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">timecoord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">__ms2imagecoord</span><span class="p">(</span><span class="n">f_peaks</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="n">highest_time_res</span><span class="p">),</span> <span class="n">time_grid_width</span><span class="p">)</span>\
+                    <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">imagedata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">timecoord</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">timecoord</span><span class="o">+</span><span class="mi">4</span><span class="p">)),</span> <span class="n">midi_pitch</span><span class="o">-</span><span class="n">midi_min</span><span class="p">]</span> <span class="o">=</span>\
+                    <span class="n">f_peaks</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+
+        <span class="n">timescale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">time_grid_width</span><span class="p">)</span> <span class="o">*</span> <span class="n">highest_time_res</span> <span class="o">-</span> <span class="n">highest_time_res</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">pitchscale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="n">plot_matrix</span><span class="p">(</span><span class="n">imagedata</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">,</span>
+                                  <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
+                                  <span class="n">colorbar_aspect</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                                  <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">timescale</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">timescale</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span><span class="p">],</span>
+                                  <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;MIDI pitch&#39;</span><span class="p">,</span>
+                                  <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Time (seconds)&#39;</span><span class="p">,</span>
+                                  <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Pitch Onset Features&#39;</span><span class="p">,</span>
+                                  <span class="n">cmap</span><span class="o">=</span><span class="n">compressed_gray_cmap</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">pitchscale</span><span class="p">[::</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">pitchscale</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">f_peaks</span></div>
+
+
+<span class="k">def</span> <span class="nf">__ms2imagecoord</span><span class="p">(</span><span class="n">timems</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                    <span class="n">highest_time_res</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Round ``timems`` onto a discrete grid defined by &#39;highest_time_res&#39;&quot;&quot;&quot;</span>
+    <span class="n">coord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">timems</span> <span class="o">/</span> <span class="p">(</span><span class="n">highest_time_res</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">coord</span>
+
+
+<span class="k">def</span> <span class="nf">__find_peaks</span><span class="p">(</span><span class="n">W</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">descent_thresh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="nb">dir</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">abs_thresh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rel_thresh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tmin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This function finds the significant peaks in a given one-dimensional</span>
+<span class="sd">    W array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    W : np.ndarray</span>
+<span class="sd">        Signal to be searched for (positive) peaks</span>
+
+<span class="sd">    descent_thresh : np.ndarray</span>
+<span class="sd">        Descent threshold.</span>
+<span class="sd">        During peak candidate verification, if a slope change</span>
+<span class="sd">        from negative to positive slope occurs at sample i BEFORE the descent has</span>
+<span class="sd">        exceeded rel_thresh(i), and if descent_thresh(i) has not been exceeded yet,</span>
+<span class="sd">        the current peak candidate will be dropped. This situation corresponds to</span>
+<span class="sd">        a secondary peak occuring shortly after the current candidate peak</span>
+<span class="sd">        (which might lead to a higher peak value)!</span>
+
+<span class="sd">    dir : int</span>
+<span class="sd">        +1 for forward peak searching, -1 for backward peak searching (default=-1)</span>
+
+<span class="sd">    abs_thresh : np.ndarray</span>
+<span class="sd">        Absolute threshold signal, i.e. only __find_peaks satisfying W[i]&gt;=abs_thresh[i]</span>
+<span class="sd">        will be reported. abs_thresh must have the same number of samples as W.</span>
+<span class="sd">        A sensible choice for this parameter would be a global or local average</span>
+<span class="sd">        or median of the signal W. If omitted, half the median of W will be used.</span>
+
+<span class="sd">    rel_thresh : np.ndarray</span>
+<span class="sd">        Relative threshold signal. Only peak positions i with an uninterrupted</span>
+<span class="sd">        positive ascent before position i of at least rel_thresh[i] and a</span>
+<span class="sd">        possibly interrupted (see parameter descent_thresh) descent of at least</span>
+<span class="sd">        rel_thresh[i] will be reported. rel_thresh must have the same number of</span>
+<span class="sd">        samples as W. A sensible choice would be some measure related to the</span>
+<span class="sd">        global or local variance of the signal W. If omitted, half the</span>
+<span class="sd">        standard deviation of W will be used.</span>
+
+<span class="sd">    tmin : int</span>
+<span class="sd">        Index of start sample. Peak search will begin at W[tmin]</span>
+
+<span class="sd">    tmax : int</span>
+<span class="sd">        Index of end sample. Peak search will end at W[tmax]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    peaks : np.ndarray</span>
+<span class="sd">        Column vector of peak positions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize parameters</span>
+    <span class="n">tmax</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">size</span> <span class="k">if</span> <span class="n">tmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tmax</span>
+    <span class="n">tmin</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">tmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tmin</span>
+
+    <span class="k">if</span> <span class="nb">dir</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">dir</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Direction has to be either +1 or -1.&#39;</span><span class="p">)</span>
+
+    <span class="n">abs_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">W</span><span class="p">),</span> <span class="n">W</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">abs_thresh</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">abs_thresh</span>
+    <span class="n">rel_thresh</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">W</span><span class="p">)),</span> <span class="n">W</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="k">if</span> <span class="n">rel_thresh</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rel_thresh</span>
+    <span class="n">descent_thresh</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">rel_thresh</span> <span class="k">if</span> <span class="n">descent_thresh</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">descent_thresh</span>
+
+    <span class="n">peaks</span> <span class="o">=</span> <span class="n">__find_peaks_jit_helper</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">abs_thresh</span><span class="p">,</span> <span class="n">descent_thresh</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="n">rel_thresh</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">peaks</span>
+
+
+<span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">__find_peaks_jit_helper</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">abs_thresh</span><span class="p">,</span> <span class="n">descent_thresh</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="n">rel_thresh</span><span class="p">):</span>
+    <span class="n">dyold</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">rise</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># current amount of ascent during a rising portion of the signal W</span>
+    <span class="n">riseold</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># accumulated amount of ascent from the last rising portion of W</span>
+    <span class="n">descent</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># current amount of descent (&lt;0) during a falling portion of the signal W</span>
+    <span class="n">searching_peak</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Initialization for the output __find_peaks array</span>
+    <span class="n">peaks_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">:</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">W</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="nb">dir</span><span class="p">]</span> <span class="o">-</span> <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dy</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rise</span> <span class="o">+=</span> <span class="n">dy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">descent</span> <span class="o">+=</span> <span class="n">dy</span>
+
+        <span class="k">if</span> <span class="n">dyold</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dy</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># slope change positive -&gt; negative</span>
+                <span class="k">if</span> <span class="n">rise</span> <span class="o">&gt;=</span> <span class="n">rel_thresh</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">searching_peak</span><span class="p">:</span>
+                    <span class="n">candidate</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="n">searching_peak</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">riseold</span> <span class="o">=</span> <span class="n">rise</span>
+                <span class="n">rise</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># dyold &lt; 0</span>
+            <span class="k">if</span> <span class="n">dy</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># in descent</span>
+                <span class="k">if</span> <span class="n">descent</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">rel_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">searching_peak</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">W</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">abs_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]:</span>
+                        <span class="n">peaks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+                    <span class="n">searching_peak</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># dy &gt;= 0 slope change negative-&gt;positive</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">searching_peak</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">W</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="o">-</span> <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">descent_thresh</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">rise</span> <span class="o">=</span> <span class="n">riseold</span> <span class="o">+</span> <span class="n">descent</span>
+                    <span class="k">if</span> <span class="n">descent</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">rel_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">W</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">abs_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]:</span>
+                            <span class="n">peaks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+                    <span class="n">searching_peak</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">descent</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">dyold</span> <span class="o">=</span> <span class="n">dy</span>
+    <span class="n">peaks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">peaks_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">peaks</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
