@@ -30,7 +30,7 @@ and then start the notebook server via
 jupyter notebook
 ```
 
-Alternatively, HTML exports of the example notebooks are provided on https://github.com/meinardmueller/synctoolbox/releases
+Alternatively, HTML exports of the example notebooks are provided under "[Releases](https://github.com/meinardmueller/synctoolbox/releases)".
 
 
 ## Usage
@@ -44,6 +44,10 @@ https://meinardmueller.github.io/synctoolbox
 ## Contributing
 
 We are happy for suggestions and contributions. We would be grateful for either directly contacting us via email (meinard.mueller@audiolabs-erlangen.de) or for creating an issue in our Github repository. Please do not submit a pull request without prior consultation with us.
+
+## Licence
+
+The code for this toolbox is published under an MIT licence. This does not apply to the data files. Schubert songs are taken from the [Schubert Winterreise Dataset](https://zenodo.org/record/4122060). The Chopin prelude example files are taken from the [FMP notebooks](https://www.audiolabs-erlangen.de/resources/MIR/FMP/C0/C0.html).
 
 ## Acknowledgements
 
