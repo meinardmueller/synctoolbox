@@ -22,9 +22,7 @@ affiliations:
  - name: International Audio Laboratories Erlangen
    index: 1
 date: 01 June 2021
-bibliography:
-  - references.bib
-citation_author: Müller \& Özer \& Krause \& Prätzlich \& Driedger
+bibliography: references.bib
 link-citations: yes
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
