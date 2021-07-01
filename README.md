@@ -45,6 +45,16 @@ https://meinardmueller.github.io/synctoolbox
 
 We are happy for suggestions and contributions. We would be grateful for either directly contacting us via email (meinard.mueller@audiolabs-erlangen.de) or for creating an issue in our Github repository. Please do not submit a pull request without prior consultation with us.
 
+## Tests
+We provide automated tests for each feature and different variants of MrMsDTW. These ensure that the outputs match the ground truth matrices provided in the **tests/data** folder.
+
+To execute the test script, you will need to install extra requirements for testing:
+
+```
+pip install 'synctoolbox[tests]'
+pytest tests
+```
+
 ## Licence
 
 The code for this toolbox is published under an MIT licence. This does not apply to the data files. Schubert songs are taken from the [Schubert Winterreise Dataset](https://zenodo.org/record/4122060). The Chopin prelude example files are taken from the [FMP notebooks](https://www.audiolabs-erlangen.de/resources/MIR/FMP/C0/C0.html).
