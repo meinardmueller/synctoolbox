@@ -20,7 +20,7 @@ In Proceedings of the IEEE International Conference on Acoustics, Speech, and Si
 
 ## Installing
 
-If you just want to try our example notebooks, you can run them using Binder directly in your browser: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/meinardmueller/synctoolbox/HEAD)
+If you just want to try our example notebooks, you can run them using Binder directly in your browser: [![Binder](https://mybinder.org/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/meinardmueller/synctoolbox/master)
 
 To install the Sync Toolbox locally, you can use the Python package manager pip:
 
