@@ -10,7 +10,6 @@ Meinard Müller, Henning Mattes, and Frank Kurth.
 [An Efficient Multiscale Approach to Audio Synchronization](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2006_MuellerMattesKurth_MultiscaleAudioSynchronization_ISMIR.pdf).
 In Proceedings of the International Society for Music Information Retrieval Conference (ISMIR): 192–197, 2006.
 
-
 Sebastian Ewert, Meinard Müller, and Peter Grosche.
 [High Resolution Audio Synchronization Using Chroma Onset Features](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2009_EwertMuellerGrosche_HighResAudioSync_ICASSP.pdf).
 In Proceedings of IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP): 1869–1872, 2009.
@@ -21,18 +20,21 @@ In Proceedings of the IEEE International Conference on Acoustics, Speech, and Si
 
 ## Installing
 
-You can install the Sync Toolbox using the Python package manager pip:
+If you just want to try our example notebooks, you can run them using Binder directly in your browser: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/meinardmueller/synctoolbox/HEAD)
+
+To install the Sync Toolbox locally, you can use the Python package manager pip:
 
 ```
 pip install synctoolbox
 ```
+We recommend to do this inside a conda or virtual environment. **Note:** On some systems, you may see errors related with ``soundfile`` when calling some functions or executing our example notebooks. ``soundfile`` is a dependency of ``librosa``, which is used by the Sync Toolbox. In case of errors, you may have to install libsndfile using your package manager, e.g., ``sudo apt install libsndfile1``. Alternatively, you may create a conda environment, install ``librosa`` using conda and then install the Sync Toolbox with the pip command from above. See [here](https://github.com/librosa/librosa#hints-for-the-installation) for further information if you are experiencing these issues.
 
-In order to run the example notebooks, you may clone this repository using
+
+If you want to run the example notebooks locally, you **must** first install the Sync Toolbox to resolve all dependencies. Then, you can clone this repository using
 
 ```
 git clone https://github.com/meinardmueller/synctoolbox.git
 ```
-
 install Jupyter using
 
 ```
@@ -45,7 +47,7 @@ and then start the notebook server via
 jupyter notebook
 ```
 
-Alternatively, HTML exports of the example notebooks are provided under "[Releases](https://github.com/meinardmueller/synctoolbox/releases)".
+Finally, HTML exports of the example notebooks are provided under "[Releases](https://github.com/meinardmueller/synctoolbox/releases)".
 
 
 ## Usage
@@ -61,6 +63,7 @@ https://meinardmueller.github.io/synctoolbox
 We are happy for suggestions and contributions. We would be grateful for either directly contacting us via email (meinard.mueller@audiolabs-erlangen.de) or for creating an issue in our Github repository. Please do not submit a pull request without prior consultation with us.
 
 ## Tests
+
 We provide automated tests for each feature and different variants of MrMsDTW. These ensure that the outputs match the ground truth matrices provided in the **tests/data** folder.
 
 To execute the test script, you will need to install extra requirements for testing:
