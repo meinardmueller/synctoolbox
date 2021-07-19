@@ -2,7 +2,9 @@
 
 This repository contains a Python package called Sync Toolbox, which provides open-source reference implementations for full-fledged music synchronization pipelines and yields state-of-the-art alignment results for a wide range of Western music. 
 
-Using suitable feature representations and cost measures, the toolbox's core technology is based on dynamic time warping (DTW), which brings the feature sequences into temporal correspondence. To account for efficiency, robustness and, accuracy, our toolbox integrates and combines techniques such as [multiscale DTW (MsDTW)](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2006_MuellerMattesKurth_MultiscaleAudioSynchronization_ISMIR.pdf), [memory-restricted MsDTW (MrMsDTW)](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2016_PraetzlichDriedgerMueller_MrMsDTW_ICASSP.pdf), and [high-resolution music synchronization](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2009_EwertMuellerGrosche_HighResAudioSync_ICASSP.pdf). If you use the Sync Toolbox in your research, please consider citing the publications listed below.
+Using suitable feature representations and cost measures, the toolbox's core technology is based on dynamic time warping (DTW), which brings the feature sequences into temporal correspondence. To account for efficiency, robustness and, accuracy, our toolbox integrates and combines techniques such as [multiscale DTW (MsDTW)](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2006_MuellerMattesKurth_MultiscaleAudioSynchronization_ISMIR.pdf), [memory-restricted MsDTW (MrMsDTW)](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2016_PraetzlichDriedgerMueller_MrMsDTW_ICASSP.pdf), and [high-resolution music synchronization](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2009_EwertMuellerGrosche_HighResAudioSync_ICASSP.pdf). 
+
+If you use the Sync Toolbox in your research, please consider the following references.
 
 ## References
 
