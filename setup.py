@@ -33,7 +33,7 @@ setup(
                       'pandas >= 1.0.0, < 2.0.0',
                       'pretty_midi >= 0.2.0, < 1.0.0',
                       'pysoundfile >= 0.9.0, < 1.0.0',
-                      'scipy >= 1.3.0, < 2.0.0',
+                      'scipy >= 1.7.0, < 2.0.0',
                       'libfmp >= 1.2.0, < 2.0.0'],
     python_requires='>=3.6, <4.0',
     extras_require={
