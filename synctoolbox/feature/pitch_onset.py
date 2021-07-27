@@ -26,12 +26,12 @@ EPS = np.finfo(float).eps
 #            down_step: 10/882: 11.3 ms
 #            882/10: 88.2
 
-WINDOW_SIZE = np.array([101, 41, 21], np.int)
-DOWNSAMPLING_FACTORS = np.array([50, 10, 10], np.int)
+WINDOW_SIZE = np.array([101, 41, 21], int)
+DOWNSAMPLING_FACTORS = np.array([50, 10, 10], int)
 CUT_OFF = 1 / DOWNSAMPLING_FACTORS
 CUT_OFF[2] = 0.05
 RES_FAC = np.array([50, 50, 250])
-WINDOW_LENGTHS = np.array([100, 100, 50], np.int)  # window lengths for local maximum
+WINDOW_LENGTHS = np.array([100, 100, 50], int)  # window lengths for local maximum
 
 
 def audio_to_pitch_onset_features(f_audio: np.ndarray,
@@ -119,8 +119,8 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
         f_square = f_filtfilt ** 2
         window = np.hanning(ws + 2)[1:-1]
         f_energy = signal.upfirdn(h=window, x=f_square, up=1, down=ds)
-        delay = np.floor((ws-1)/(ds*2)).astype(np.int)
-        length = np.floor(f_filtfilt.size / ds).astype(np.int)
+        delay = np.floor((ws-1)/(ds*2)).astype(int)
+        length = np.floor(f_filtfilt.size / ds).astype(int)
         f_energy = f_energy[delay: delay + length]
 
         # further smoothing of the energy curve
@@ -153,7 +153,7 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
         res = RES_FAC[index]
         res_center = np.ceil(res/2)
         time_peaks = __find_peaks(W=f_onset, dir=1, abs_thresh=thresh)
-        val_peaks = f_onset[time_peaks.astype(np.int)]
+        val_peaks = f_onset[time_peaks.astype(int)]
         time_peaks = (time_peaks * res - res_center) * 1000 / Fs
 
         if manual_offset != 0:
@@ -171,7 +171,7 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
         # highest time resolution that appairs (in sec). A base sampling rate of
         # 22050 and downsampling of factor 5 twice is assumed.
         highest_time_res = np.min(DOWNSAMPLING_FACTORS / np.array([Fs, Fs/5, Fs/25], np.float64))
-        time_grid_width = np.ceil(f_audio.size / Fs / highest_time_res).astype(np.int)
+        time_grid_width = np.ceil(f_audio.size / Fs / highest_time_res).astype(int)
         num_pitches = midi_max - midi_min + 1
 
         imagedata = np.zeros((time_grid_width, num_pitches))
@@ -182,7 +182,7 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
 
             for k in range(f_peaks[midi_pitch].shape[1]):
                 timecoord = np.minimum(__ms2imagecoord(f_peaks[midi_pitch][0, k], highest_time_res), time_grid_width)\
-                    .astype(np.int)
+                    .astype(int)
                 imagedata[np.maximum(1, np.arange(timecoord-3, timecoord+4)), midi_pitch-midi_min] =\
                     f_peaks[midi_pitch][1, k]
 

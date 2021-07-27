@@ -48,7 +48,7 @@ def compute_optimal_chroma_shift(f_chroma1: np.ndarray,
 
 
 def compute_warping_paths_from_cost_matrices(cost_matrices: list,
-                                             step_sizes: np.array = np.array([[1, 0], [0, 1], [1, 1]], np.int),
+                                             step_sizes: np.array = np.array([[1, 0], [0, 1], [1, 1]], int),
                                              step_weights: np.array = np.array([1.0, 1.0, 1.0], np.float64),
                                              implementation: str = 'synctoolbox') -> list:
     """Computes a path via DTW on each matrix in cost_matrices
@@ -114,8 +114,8 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
 
     cost_matrices = list()
     for k in range(anchors.shape[1] - 1):
-        a1 = np.array(anchors[:, k].astype(np.int), copy=True)
-        a2 = np.array(anchors[:, k + 1].astype(np.int), copy=True)
+        a1 = np.array(anchors[:, k].astype(int), copy=True)
+        a2 = np.array(anchors[:, k + 1].astype(int), copy=True)
 
         if high_res:
             if f_chroma1.shape != f_DLNCO1.shape or f_chroma2.shape != f_DLNCO2.shape:

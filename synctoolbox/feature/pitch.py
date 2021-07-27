@@ -95,8 +95,8 @@ def audio_to_pitch_features(f_audio: np.ndarray,
         f_filtfilt = filtfilt_matlab(x=wav_ds[index], b=b, a=a)
         f_square = f_filtfilt ** 2
 
-        start = np.floor(seg_wav_start / Fs * FS_PITCH[index]).astype(np.int)  # floor due to indexing
-        stop = np.floor(seg_wav_stop / Fs * FS_PITCH[index]).astype(np.int)
+        start = np.floor(seg_wav_start / Fs * FS_PITCH[index]).astype(int)  # floor due to indexing
+        stop = np.floor(seg_wav_stop / Fs * FS_PITCH[index]).astype(int)
         factor = Fs / FS_PITCH[index]
         __window_and_sum(f_pitch, f_square, midi_pitch, seg_wav_num, start, stop, factor)
 
@@ -119,7 +119,7 @@ def __visualize_pitch(f_pitch: np.ndarray,
                       midi_max: int = 108,
                       feature_rate: float = 0,
                       use_pitch_name_labels: bool = False,
-                      y_tick: np.ndarray = np.array([21, 30, 40, 50, 60, 70, 80, 90, 100], np.int)):
+                      y_tick: np.ndarray = np.array([21, 30, 40, 50, 60, 70, 80, 90, 100], int)):
 
     f_image = f_pitch[midi_min:midi_max + 1, :]
 

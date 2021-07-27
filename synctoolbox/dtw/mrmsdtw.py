@@ -178,8 +178,7 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
         if verbose and cost_matrices_step1 is not None:
             anchors_step1 = np.array(anchors, copy=True)
             wp_step1 = np.array(wp, copy=True)
-            num_rows_step1, num_cols_step1 = np.sum(np.array([dtw_mat.shape for dtw_mat in cost_matrices_step1],
-                                                             np.int),
+            num_rows_step1, num_cols_step1 = np.sum(np.array([dtw_mat.shape for dtw_mat in cost_matrices_step1], int),
                                                     axis=0)
             fig, ax = sync_visualize_step1(cost_matrices_step1,
                                            num_rows_step1,

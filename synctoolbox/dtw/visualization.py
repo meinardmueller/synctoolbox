@@ -173,7 +173,7 @@ def __visualize_path_in_matrix(ax,
     assert axisX is not None and isinstance(axisX, np.ndarray), 'axisX must be a numpy array!'
     assert axisY is not None and isinstance(axisY, np.ndarray), 'axisY must be a numpy array!'
 
-    wp = wp.astype(np.int)
+    wp = wp.astype(int)
 
     ax.plot(axisY[wp[1, :]], axisX[wp[0, :]], '-k', linewidth=5)
     ax.plot(axisY[wp[1, :]], axisX[wp[0, :]], color=path_color, linewidth=3)

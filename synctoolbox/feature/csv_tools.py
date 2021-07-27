@@ -26,7 +26,7 @@ def read_csv_to_df(csv_filepath: str = '',
     df.columns = df.columns.str.lower()
 
     if 'pitch' in df.columns:
-        df['pitch'] = df['pitch'].astype(np.int)
+        df['pitch'] = df['pitch'].astype(int)
 
     return df
 
@@ -74,7 +74,7 @@ def df_to_pitch_features(df: pd.DataFrame,
     """
     stepsize_ms = 1 / feature_rate * 1000
     audio_duration = __get_audio_duration_from_df(df)  # in seconds
-    num_pitch_features = np.ceil(audio_duration * 1000 / stepsize_ms).astype(np.int)
+    num_pitch_features = np.ceil(audio_duration * 1000 / stepsize_ms).astype(int)
     f_pitch = np.zeros((128, num_pitch_features), dtype=np.float64)
 
     for _, row in df.iterrows():
@@ -83,11 +83,11 @@ def df_to_pitch_features(df: pd.DataFrame,
         pitch = int(row['pitch'] + transpose)
         velocity = row['velocity']
         instrument = row['instrument']
-        first_step_size_interval = np.floor(start_time_ms / stepsize_ms).astype(np.int) + 1
+        first_step_size_interval = np.floor(start_time_ms / stepsize_ms).astype(int) + 1
         last_step_size_interval = np.minimum(np.floor(end_time_ms / stepsize_ms) + 1,
                                              num_pitch_features)
-        first_window_involved = first_step_size_interval.astype(np.int)
-        last_window_involved = np.minimum(last_step_size_interval + 1, num_pitch_features).astype(np.int)
+        first_window_involved = first_step_size_interval.astype(int)
+        last_window_involved = np.minimum(last_step_size_interval + 1, num_pitch_features).astype(int)
 
         if not midi_max >= pitch >= midi_min:
             raise ValueError(f'The pitch for note {pitch} at time point {start_time_ms/ 1000} sec is not valid.')

@@ -124,8 +124,8 @@ def derive_neighboring_anchors(warping_path: np.ndarray,
         Indices into ``warping path`` corresponding to ``neighboring_anchors``
     """
     L = anchor_indices.shape[0]
-    neighboring_anchor_indices = np.zeros(L-1, dtype=np.int)
-    neighboring_anchors = np.zeros((2, L-1),  dtype=np.int)
+    neighboring_anchor_indices = np.zeros(L-1, dtype=int)
+    neighboring_anchors = np.zeros((2, L-1),  dtype=int)
 
     for k in range(1, L):
         i1 = anchor_indices[k-1]
