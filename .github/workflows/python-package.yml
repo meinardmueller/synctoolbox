@@ -27,8 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        apt-get install libsndfile1
-        python -m pip install flake8 pytest pysndfile
+        python -m pip install flake8 pytest sndfile
         python -m pip install .
     - name: Lint with flake8
       run: |
