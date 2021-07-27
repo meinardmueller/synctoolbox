@@ -9,7 +9,7 @@ from synctoolbox.feature.utils import shift_chroma_vectors
 def compute_optimal_chroma_shift(f_chroma1: np.ndarray,
                                  f_chroma2: np.ndarray,
                                  chroma_transpositions: np.ndarray = np.arange(0, 12),
-                                 step_sizes: np.ndarray = np.array([[1, 0], [0, 1], [1, 1]], np.int),
+                                 step_sizes: np.ndarray = np.array([[1, 0], [0, 1], [1, 1]], int),
                                  step_weights: np.ndarray = np.array([1.0, 1.0, 1.0], np.float64)) -> int:
     """Computes the optimal chroma shift which minimizes the DTW cost.
 
