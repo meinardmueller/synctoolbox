@@ -54,9 +54,9 @@ def test_high_res_mrmsdtw():
     f_DLNCO_2_gt = shift_chroma_vectors(f_DLNCO_2_gt, 11)
 
     wp = sync_via_mrmsdtw(f_chroma1=f_chroma_quantized_1_gt,
-                          f_DLNCO1=f_DLNCO_1_gt,
+                          f_onset1=f_DLNCO_1_gt,
                           f_chroma2=f_chroma_quantized_2_gt,
-                          f_DLNCO2=f_DLNCO_2_gt,
+                          f_onset2=f_DLNCO_2_gt,
                           input_feature_rate=50,
                           step_weights=np.array([1.5, 1.5, 2.0]),
                           threshold_rec=10 ** 6,
