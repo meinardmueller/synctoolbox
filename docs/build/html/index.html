@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>SyncToolbox Documentation &mdash; SyncToolbox 1.0.0 documentation</title>
+  <title>Sync Toolbox: A Python Package for Efficient, Robust, and Accurate Music Synchronization &mdash; SyncToolbox 1.0.0 documentation</title>
   
 
   
@@ -18,10 +18,7 @@
 
   
   
-
   
-  
-
   
 
   
@@ -138,20 +135,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>SyncToolbox Documentation</li>
+      <li>Sync Toolbox: A Python Package for Efficient, Robust, and Accurate Music Synchronization</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -165,13 +160,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="synctoolbox-documentation">
-<h1>SyncToolbox Documentation<a class="headerlink" href="#synctoolbox-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This webpage contains the API documentation for the Python package synctoolbox.</p>
-<p>The source code for the package SyncToolbox is hosted at GitHub:</p>
+  <div class="section" id="sync-toolbox-a-python-package-for-efficient-robust-and-accurate-music-synchronization">
+<h1>Sync Toolbox: A Python Package for Efficient, Robust, and Accurate Music Synchronization<a class="headerlink" href="#sync-toolbox-a-python-package-for-efficient-robust-and-accurate-music-synchronization" title="Permalink to this headline">¶</a></h1>
+<p><strong>Sync Toolbox</strong> is a Python package, which comprises all components of a music synchronization
+pipeline that is robust, efficient, and accurate.</p>
+<p>The toolbox’s core technology is based on dynamic time warping (DTW). Using suitable feature representations
+and cost measures, DTW brings the feature sequences into temporal correspondence. To account for efficiency,
+robustness, and accuracy, <strong>Sync Toolbox</strong> uses a combination of
+<a class="reference external" href="https://www.audiolabs-erlangen.de/content/05-fau/professor/00-mueller/03-publications/2006_MuellerMattesKurth_MultiscaleAudioSynchronization_ISMIR.pdf">multiscale DTW (MsDTW)</a>,
+<a class="reference external" href="https://www.audiolabs-erlangen.de/content/05-fau/professor/00-mueller/03-publications/2016_PraetzlichDriedgerMueller_MrMsDTW_ICASSP.pdf">memory-restricted MsDTW (MrMsDTW)</a>,
+and <a class="reference external" href="https://www.audiolabs-erlangen.de/content/05-fau/professor/00-mueller/03-publications/2009_EwertMuellerGrosche_HighResAudioSync_ICASSP.pdf">high-resolution music synchronization</a>.</p>
+<p>Despite a slight overlap with the well-known software packages in the MIR field (e.g., librosa and linmdtw),
+our <strong>Sync Toolbox</strong> is the first to provide an open-source Python package for offline music synchronization
+that produces state-of-the-art alignment results regarding efficiency and accuracy.</p>
+<div class="section" id="sync-toolbox-api-documentation">
+<h2>Sync Toolbox API Documentation<a class="headerlink" href="#sync-toolbox-api-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The source code for the package Sync Toolbox is hosted at GitHub:</p>
 <p><a class="reference external" href="https://github.com/meinardmueller/synctoolbox">https://github.com/meinardmueller/synctoolbox</a></p>
 <p>In particular, please note the provided Readme and the example notebooks.</p>
-<p>If you use SyncToolbox in a scholarly work, please consider citing the SyncToolbox article. <a class="footnote-reference brackets" href="#id2" id="id1">1</a></p>
+<p>If you use SyncToolbox in a scholarly work, please consider citing the Sync Toolbox article. <a class="footnote-reference brackets" href="#id2" id="id1">1</a></p>
 <dl class="footnote brackets">
 <dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>2021, Article</p>
@@ -182,34 +189,42 @@
 <div class="toctree-wrapper compound">
 </div>
 </div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="dtw.html" class="btn btn-neutral float-right" title="Dynamic Time Warping (synctoolbox.dtw)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+        <a href="dtw.html" class="btn btn-neutral float-right" title="Dynamic Time Warping (synctoolbox.dtw)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+        
+        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
 
     </p>
   </div>
     
     
     
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 

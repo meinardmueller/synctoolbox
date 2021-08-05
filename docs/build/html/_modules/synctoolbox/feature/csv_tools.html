@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>synctoolbox.feature.csv_tools &mdash; SyncToolbox 1.0.0 documentation</title>
   
@@ -18,10 +18,7 @@
 
   
   
-
   
-  
-
   
 
   
@@ -137,8 +134,6 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -191,7 +186,7 @@
     <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="s1">&#39;pitch&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;pitch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;pitch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;pitch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;pitch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
 
@@ -239,7 +234,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stepsize_ms</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">feature_rate</span> <span class="o">*</span> <span class="mi">1000</span>
     <span class="n">audio_duration</span> <span class="o">=</span> <span class="n">__get_audio_duration_from_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>  <span class="c1"># in seconds</span>
-    <span class="n">num_pitch_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">audio_duration</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="n">stepsize_ms</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+    <span class="n">num_pitch_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">audio_duration</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="n">stepsize_ms</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="n">f_pitch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_pitch_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
@@ -248,11 +243,11 @@
         <span class="n">pitch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;pitch&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">transpose</span><span class="p">)</span>
         <span class="n">velocity</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span>
         <span class="n">instrument</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">]</span>
-        <span class="n">first_step_size_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">start_time_ms</span> <span class="o">/</span> <span class="n">stepsize_ms</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">first_step_size_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">start_time_ms</span> <span class="o">/</span> <span class="n">stepsize_ms</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">last_step_size_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">end_time_ms</span> <span class="o">/</span> <span class="n">stepsize_ms</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                                              <span class="n">num_pitch_features</span><span class="p">)</span>
-        <span class="n">first_window_involved</span> <span class="o">=</span> <span class="n">first_step_size_interval</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-        <span class="n">last_window_involved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">last_step_size_interval</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_pitch_features</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">first_window_involved</span> <span class="o">=</span> <span class="n">first_step_size_interval</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">last_window_involved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">last_step_size_interval</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_pitch_features</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">midi_max</span> <span class="o">&gt;=</span> <span class="n">pitch</span> <span class="o">&gt;=</span> <span class="n">midi_min</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The pitch for note </span><span class="si">{</span><span class="n">pitch</span><span class="si">}</span><span class="s1"> at time point </span><span class="si">{</span><span class="n">start_time_ms</span><span class="o">/</span> <span class="mi">1000</span><span class="si">}</span><span class="s1"> sec is not valid.&#39;</span><span class="p">)</span>
@@ -467,25 +462,28 @@
            
           </div>
           <footer>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+        
+        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
 
     </p>
   </div>
     
     
     
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
