@@ -4,7 +4,8 @@ from scipy import signal
 import matplotlib.pyplot as plt
 from numba import jit
 
-from synctoolbox.feature.filterbank import generate_list_of_downsampled_audio, get_fs_index, filtfilt_matlab, generate_filterbank
+from synctoolbox.feature.filterbank import generate_list_of_downsampled_audio, get_fs_index,\
+    generate_filterbank
 
 EPS = np.finfo(float).eps
 
@@ -101,17 +102,15 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
     # Computing f_onset and f_peaks for all pitches
     if verbose:
         print("Processing midi pitches", midi_min, "to", midi_max)
+
     for midi_pitch in range(midi_min, midi_max + 1):
         if verbose and midi_pitch % 10 == 0:
             print(midi_pitch, end="")
         else:
             print(".", end="")
         index = get_fs_index(midi_pitch)
-        b = h[midi_pitch]['b']
-        a = h[midi_pitch]['a']
 
-        f_filtfilt = filtfilt_matlab(x=wav_ds[index], b=b, a=a)
-
+        f_filtfilt = signal.sosfiltfilt(x=wav_ds[index], sos=h[midi_pitch])
         ws = WINDOW_SIZE[index]
         ds = DOWNSAMPLING_FACTORS[index]
 
@@ -129,8 +128,9 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
 
         Wp = CUT_OFF[index]
         n, Wn = signal.cheb2ord(wp=Wp, ws=Wp+0.01, gpass=1, gstop=20)
-        b, a = signal.cheby2(N=n, rs=20, Wn=Wn, output='ba')
-        f_energy = filtfilt_matlab(x=f_energy, b=b, a=a)
+
+        sos = signal.cheby2(N=n, rs=20, Wn=Wn, output='sos')
+        f_energy = signal.sosfiltfilt(x=f_energy, sos=sos)
 
         # discrete differentiation and half-wave rectifying
         f_onset = np.diff(f_energy)
@@ -318,6 +318,7 @@ def __find_peaks_jit_helper(W, abs_thresh, descent_thresh, dir, range, rel_thres
                         rise = riseold + descent
                     if descent <= -rel_thresh[candidate]:
                         if W[candidate] >= abs_thresh[candidate]:
+
                             peaks_list.append(candidate)
                     searching_peak = True
                 descent = 0
