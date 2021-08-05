@@ -1,3 +1,7 @@
+[![Python Package using Conda](https://github.com/meinardmueller/synctoolbox/actions/workflows/test_conda.yml/badge.svg)](https://github.com/meinardmueller/synctoolbox/actions/workflows/test_conda.yml)
+[![Python package](https://github.com/meinardmueller/synctoolbox/actions/workflows/test_pip.yml/badge.svg)](https://github.com/meinardmueller/synctoolbox/actions/workflows/test_pip.yml)
+
+
 # Sync Toolbox
 
 This repository contains a Python package called Sync Toolbox, which provides open-source reference implementations for full-fledged music synchronization pipelines and yields state-of-the-art alignment results for a wide range of Western music. 
