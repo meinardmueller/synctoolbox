@@ -98,8 +98,8 @@ def test_pitch_onset_features():
                                                     tuning_offset=7,
                                                     verbose=False)
 
-    dict_allclose(f_pitch_onset_1, f_pitch_onset_1_gt, atol=1e-4)
-    dict_allclose(f_pitch_onset_2, f_pitch_onset_2_gt, atol=1e-4)
+    dict_allclose(f_pitch_onset_1, f_pitch_onset_1_gt, atol=1e-5)
+    dict_allclose(f_pitch_onset_2, f_pitch_onset_2_gt, atol=1e-5)
 
 
 def test_DLNCO_features():
