@@ -4,10 +4,11 @@ import numpy as np
 from synctoolbox.feature.chroma import pitch_to_chroma, quantize_chroma, quantized_chroma_to_CENS
 from synctoolbox.feature.csv_tools import read_csv_to_df, df_to_pitch_features, df_to_pitch_onset_features
 from synctoolbox.feature.dlnco import pitch_onset_features_to_DLNCO
+from synctoolbox.feature.filterbank import generate_filterbank
 from synctoolbox.feature.pitch import audio_to_pitch_features
-from synctoolbox.feature.pitch_onset import audio_to_pitch_onset_features
+from synctoolbox.feature.pitch_onset import audio_to_pitch_onset_features, __find_peaks
 from synctoolbox.feature.utils import estimate_tuning
-from utils import dict_allclose, load_dict
+from utils import dict_allclose, filterbank_equal, load_dict
 
 
 def test_tuning():
@@ -58,6 +59,20 @@ def test_CENS_features():
 
     assert np.allclose(f_cens_1, f_CENS_1_gt, atol=1e-5)
     assert np.allclose(f_cens_2, f_CENS_2_gt, atol=1e-5)
+
+
+def test_filterbank():
+    fb_gt = load_dict('tests/data/fb.pickle')
+    fb = generate_filterbank(semitone_offset_cents=7)
+    filterbank_equal(fb, fb_gt)
+
+
+def test_peak_search():
+    f_onset_gt = np.load('tests/data/f_onset.npy')
+    peaks_gt = np.load('tests/data/peaks.npy')
+    thresh_gt = np.load('tests/data/thresh.npy')
+    time_peaks = __find_peaks(W=f_onset_gt, dir=1, abs_thresh=thresh_gt)
+    assert np.array_equal(peaks_gt, time_peaks)
 
 
 def test_pitch_features():

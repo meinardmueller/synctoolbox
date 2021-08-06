@@ -22,15 +22,6 @@ FILTERBANK_SETTINGS = [
 FS_PITCH = [22050, 4410, 882]
 
 
-def filtfilt_matlab(x, b, a) -> np.ndarray:
-    """Workaround to avoid the differences between the filtfilt functions of MATLAB
-    and Python"""
-    pad_len = max(1, 3 * (max(a.size, b.size) - 1))  # length of edge transients
-    f_filtfilt = signal.filtfilt(b=b, a=a, x=x, padtype='odd', padlen=pad_len)
-
-    return f_filtfilt
-
-
 def generate_filterbank(semitone_offset_cents: float = 0.0,
                         Q: float = 25.0,
                         stop: float = 2.0,
@@ -51,8 +42,7 @@ def generate_filterbank(semitone_offset_cents: float = 0.0,
             Wp = np.array([pitch - pass_rel * pitch, pitch + pass_rel * pitch], np.float64) / nyq
             Ws = np.array([pitch - stop_rel * pitch, pitch + stop_rel * pitch], np.float64) / nyq
             n, Wn = signal.ellipord(wp=Wp, ws=Ws, gpass=Rp, gstop=Rs)
-            h[midi_pitch]['b'], h[midi_pitch]['a'] =\
-                signal.ellip(N=n, rp=Rp, rs=Rs, Wn=Wn, output='ba', btype='bandpass')
+            h[midi_pitch] = signal.ellip(N=n, rp=Rp, rs=Rs, Wn=Wn, output='sos', btype='bandpass')
 
     return h
 

@@ -2,8 +2,9 @@ from libfmp.b import plot_matrix
 import numpy as np
 from numba import jit
 import matplotlib.pyplot as plt
+from scipy import signal
 
-from synctoolbox.feature.filterbank import FS_PITCH, generate_list_of_downsampled_audio, get_fs_index, filtfilt_matlab,\
+from synctoolbox.feature.filterbank import FS_PITCH, generate_list_of_downsampled_audio, get_fs_index,\
     generate_filterbank
 
 PITCH_NAME_LABELS = ['   ', '   ', '   ', '   ', '   ', '   ', '   ', '   ', '   ', '   ', '   ',
@@ -90,9 +91,7 @@ def audio_to_pitch_features(f_audio: np.ndarray,
         else:
             print(".", end="")
         index = get_fs_index(midi_pitch)
-        b = h[midi_pitch]['b']
-        a = h[midi_pitch]['a']
-        f_filtfilt = filtfilt_matlab(x=wav_ds[index], b=b, a=a)
+        f_filtfilt = signal.sosfiltfilt(x=wav_ds[index], sos=h[midi_pitch])
         f_square = f_filtfilt ** 2
 
         start = np.floor(seg_wav_start / Fs * FS_PITCH[index]).astype(int)  # floor due to indexing
