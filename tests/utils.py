@@ -35,9 +35,9 @@ def dict_allclose(dict1, dict2, atol=1e-5, rtol=1e-5):
             f'where: {np.where(idx)[0]}'
 
 
-def filterbank_equal(fb, fb_gt):
+def filterbank_equal(fb, fb_gt, atol=1e-5):
     """Checks whether the entries of two filterbanks are equal to each other."""
     assert fb.keys() == fb_gt.keys(), 'The MIDI indices of two filterbanks are not identical.'
 
     for k in fb:
-        assert np.array_equal(fb[k], fb_gt[k])
+        assert np.allclose(fb[k], fb_gt[k], atol=atol)
