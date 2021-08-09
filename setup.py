@@ -6,7 +6,7 @@ with open('README.md', 'r') as fdesc:
 
 setup(
     name='synctoolbox',
-    version='1.0.0',
+    version='1.0.1',
     description='Python Package for Efficient, Robust, and Accurate Music Synchronization (SyncToolbox)',
     author='Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger',
     author_email='meinard.mueller@audiolabs-erlangen.de',
