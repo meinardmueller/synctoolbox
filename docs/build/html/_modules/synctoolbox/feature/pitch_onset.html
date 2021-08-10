@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>synctoolbox.feature.pitch_onset &mdash; SyncToolbox 1.0.0 documentation</title>
   
@@ -18,7 +18,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -85,12 +88,12 @@
               
             
             
-              <p class="caption"><span class="caption-text">API Documentation</span></p>
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../feature/index.html">Feature Extraction (synctoolbox.feature)</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../py-modindex.html">Module Index</a></li>
@@ -119,6 +122,8 @@
         <div class="rst-content">
         
           
+
+
 
 
 
@@ -164,7 +169,8 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
 
-<span class="kn">from</span> <span class="nn">synctoolbox.feature.filterbank</span> <span class="kn">import</span> <span class="n">generate_list_of_downsampled_audio</span><span class="p">,</span> <span class="n">get_fs_index</span><span class="p">,</span> <span class="n">filtfilt_matlab</span><span class="p">,</span> <span class="n">generate_filterbank</span>
+<span class="kn">from</span> <span class="nn">synctoolbox.feature.filterbank</span> <span class="kn">import</span> <span class="n">generate_list_of_downsampled_audio</span><span class="p">,</span> <span class="n">get_fs_index</span><span class="p">,</span>\
+    <span class="n">generate_filterbank</span>
 
 <span class="n">EPS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
 
@@ -261,17 +267,15 @@
     <span class="c1"># Computing f_onset and f_peaks for all pitches</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing midi pitches&quot;</span><span class="p">,</span> <span class="n">midi_min</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="n">midi_max</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">midi_pitch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">midi_pitch</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">midi_pitch</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">get_fs_index</span><span class="p">(</span><span class="n">midi_pitch</span><span class="p">)</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">][</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
 
-        <span class="n">f_filtfilt</span> <span class="o">=</span> <span class="n">filtfilt_matlab</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">wav_ds</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
-
+        <span class="n">f_filtfilt</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">sosfiltfilt</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">wav_ds</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">sos</span><span class="o">=</span><span class="n">h</span><span class="p">[</span><span class="n">midi_pitch</span><span class="p">])</span>
         <span class="n">ws</span> <span class="o">=</span> <span class="n">WINDOW_SIZE</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="n">DOWNSAMPLING_FACTORS</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
@@ -289,8 +293,9 @@
 
         <span class="n">Wp</span> <span class="o">=</span> <span class="n">CUT_OFF</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">n</span><span class="p">,</span> <span class="n">Wn</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">cheb2ord</span><span class="p">(</span><span class="n">wp</span><span class="o">=</span><span class="n">Wp</span><span class="p">,</span> <span class="n">ws</span><span class="o">=</span><span class="n">Wp</span><span class="o">+</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">gpass</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gstop</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-        <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">cheby2</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;ba&#39;</span><span class="p">)</span>
-        <span class="n">f_energy</span> <span class="o">=</span> <span class="n">filtfilt_matlab</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">f_energy</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="n">sos</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">cheby2</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Wn</span><span class="o">=</span><span class="n">Wn</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;sos&#39;</span><span class="p">)</span>
+        <span class="n">f_energy</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">sosfiltfilt</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">f_energy</span><span class="p">,</span> <span class="n">sos</span><span class="o">=</span><span class="n">sos</span><span class="p">)</span>
 
         <span class="c1"># discrete differentiation and half-wave rectifying</span>
         <span class="n">f_onset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_energy</span><span class="p">)</span>
@@ -478,6 +483,7 @@
                         <span class="n">rise</span> <span class="o">=</span> <span class="n">riseold</span> <span class="o">+</span> <span class="n">descent</span>
                     <span class="k">if</span> <span class="n">descent</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">rel_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]:</span>
                         <span class="k">if</span> <span class="n">W</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">abs_thresh</span><span class="p">[</span><span class="n">candidate</span><span class="p">]:</span>
+
                             <span class="n">peaks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
                     <span class="n">searching_peak</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">descent</span> <span class="o">=</span> <span class="mi">0</span>
@@ -490,28 +496,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
+        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
