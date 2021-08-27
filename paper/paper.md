@@ -49,9 +49,9 @@ The task of finding an alignment between two feature sequences has received a la
 Beyond these classical applications, alignment techniques have gained in importance in view of recent data-driven machine learning techniques. In particular, music synchronization has shown the potential for facilitating data annotation, data augmentation, and model evaluation. 
 To be more specific, for certain types of music one often has a score-like symbolic representation that explicitly encodes information such as note events, measure positions, lyrics, and other types of metadata. Furthermore, music experts often provide their harmonic, structural, or rhythmic analyses using such symbolic reference representations.
 Music synchronization techniques then allow for (semi-)automatically transferring these manually generated annotations from the reference to other symbolic or audio representations. This is particularly beneficial for music, where one has many recorded performances of a given piece. Thus, using music synchronization techniques, one may simplify the annotation process and substantially increase the number of annotated training and test versions.
-For example, in [@ZalkowWPAM17_MeasureTransfer_AES], a multi-version approach for transferring measure annotations between music recordings (Wagner operas) is described.
+For example, in @ZalkowWPAM17_MeasureTransfer_AES, a multi-version approach for transferring measure annotations between music recordings (Wagner operas) is described.
 The "Schubert Winterreise Dataset" provides another example where automated techniques were applied to transfer measure, chord, local key, structure, and lyrics annotations [@WeissZAGKVM20_WinterreiseDataset_ACM-JOCCH].
-Including nine performances (versions) of Schubert's song cycle, this cross-version dataset was used in [@WeissSM20_LocalKey_TASLP] for training and evaluating data-driven approaches for local key estimation, where the different dataset splits across songs and performances provided new insights into the algorithms' generalization capabilities.
+Including nine performances (versions) of Schubert's song cycle, this cross-version dataset was used in @WeissSM20_LocalKey_TASLP for training and evaluating data-driven approaches for local key estimation, where the different dataset splits across songs and performances provided new insights into the algorithms' generalization capabilities.
 
 Being a central task, there are a many software packages for sequence alignment of general time series. 
 In the audio domain, the librosa Python package by @McFeeRLEMBN15_librosa_Python offers a basic DTW-based pipeline for synchronizing music recordings. 
@@ -78,7 +78,7 @@ Thus, with the publicly available and well-documented Sync Toolbox, we hope to f
 
 
 # Design Choices
-When we designed the Sync Toolbox, we had a number of different objectives in mind. First, we tried to keep a close connection to the research articles @EwertMG09_HighResAudioSync_ICASSP and @PraetzlichDM16_MsDTW_ICASSP. 
+When we designed the Sync Toolbox, we had a number of different objectives in mind. First, we tried to keep a close connection to the research articles by @EwertMG09_HighResAudioSync_ICASSP and @PraetzlichDM16_MsDTW_ICASSP. 
 Second,  we reimplemented and included all required components (e.g., feature extractors, DTW), even though such basic functionality is also covered by other packages such as librosa and linmdtw. This way, along with a specification of meaningful variable presets, the Sync Toolbox provides reference implementations that can exactly reproduce previously published research results and experiments.
 Third, we followed many of the design principles suggested by librosa [@McFeeRLEMBN15_librosa_Python], which allows users to easily combine the different Python packages. 
 The Sync Toolbox code along with API documentation is hosted in a publicly available GitHub repository. [^3]
