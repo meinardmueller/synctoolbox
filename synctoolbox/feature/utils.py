@@ -143,5 +143,20 @@ def estimate_tuning(x: np.ndarray,
 def shift_chroma_vectors(chroma: np.ndarray,
                          chroma_shift: int) -> np.ndarray:
     """Shift chroma representation by the given number of semitones.
-    Format is assumed to be 12xN"""
-    return np.roll(chroma, chroma_shift, axis=0)
+    Format is assumed to be 12xN
+
+    Parameters
+    ----------
+    chroma: np.ndarray [shape=(12, N)]
+        Chroma representation
+
+    chroma_shift: int
+        Chroma shift
+
+    Returns
+    -------
+    shifted_chroma: np.ndarray
+        Shifted chroma representation
+    """
+    shifted_chroma = np.roll(chroma, chroma_shift, axis=0)
+    return shifted_chroma

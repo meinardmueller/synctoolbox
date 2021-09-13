@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>DLNCO Features (synctoolbox.feature.dlnco) &mdash; SyncToolbox 1.0.0 documentation</title>
   
@@ -18,10 +18,7 @@
 
   
   
-
   
-  
-
   
 
   
@@ -90,18 +87,21 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Feature Extraction (synctoolbox.feature)</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="chroma.html">Chroma Features (synctoolbox.feature.chroma)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filterbank.html">Filterbank Generation (synctoolbox.feature.filterbank)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pitch.html">Pitch Features (synctoolbox.feature.pitch)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pitch_onset.html">Pitch Onset Features (synctoolbox.feature.pitch_onset)</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">DLNCO Features (synctoolbox.feature.dlnco)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csv_tools.html">CSV Tools (synctoolbox.feature.csv_tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils (synctoolbox.feature.utils)</a></li>
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../py-modindex.html">Module Index</a></li>
@@ -145,8 +145,6 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -160,7 +158,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/feature/dlnco.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -177,8 +175,8 @@
   <div class="section" id="module-synctoolbox.feature.dlnco">
 <span id="dlnco-features-synctoolbox-feature-dlnco"></span><h1>DLNCO Features (synctoolbox.feature.dlnco)<a class="headerlink" href="#module-synctoolbox.feature.dlnco" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="synctoolbox.feature.dlnco.pitch_onset_features_to_DLNCO">
-<span class="sig-prename descclassname"><span class="pre">synctoolbox.feature.dlnco.</span></span><span class="sig-name descname"><span class="pre">pitch_onset_features_to_DLNCO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_peaks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_sequence_length</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_compression_gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroma_norm_ord</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LN_maxfilterlength_seconds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LN_maxfilterthresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DLNCO_filtercoef</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.sqrt(1</span> <span class="pre">/</span> <span class="pre">np.arange(1,</span> <span class="pre">11))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../_modules/synctoolbox/feature/dlnco.html#pitch_onset_features_to_DLNCO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.dlnco.pitch_onset_features_to_DLNCO" title="Permalink to this definition">¶</a></dt>
+<dt id="synctoolbox.feature.dlnco.pitch_onset_features_to_DLNCO">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.dlnco.</span></code><code class="sig-name descname"><span class="pre">pitch_onset_features_to_DLNCO</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_peaks</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_sequence_length</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_compression_gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroma_norm_ord</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LN_maxfilterlength_seconds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LN_maxfilterthresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DLNCO_filtercoef</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.sqrt(1</span> <span class="pre">/</span> <span class="pre">np.arange(1,</span> <span class="pre">11))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">numpy.ndarray</span><a class="reference internal" href="../_modules/synctoolbox/feature/dlnco.html#pitch_onset_features_to_DLNCO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.dlnco.pitch_onset_features_to_DLNCO" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes decaying locally adaptive normalized chroma onset (DLNCO) features from
 a dictionary of peaks obtained e.g. by <code class="docutils literal notranslate"><span class="pre">audio_to_pitch_onset_features</span></code>.</p>
 <dl class="field-list">
@@ -226,29 +224,37 @@ position of the last peak in <code class="docutils literal notranslate"><span cl
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="csv_tools.html" class="btn btn-neutral float-right" title="CSV Tools (synctoolbox.feature.csv_tools)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="pitch_onset.html" class="btn btn-neutral float-left" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="csv_tools.html" class="btn btn-neutral float-right" title="CSV Tools (synctoolbox.feature.csv_tools)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pitch_onset.html" class="btn btn-neutral float-left" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+        
+        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
 
     </p>
   </div>
     
     
     
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 

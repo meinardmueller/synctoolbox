@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Chroma Features (synctoolbox.feature.chroma) &mdash; SyncToolbox 1.0.0 documentation</title>
   
@@ -18,10 +18,7 @@
 
   
   
-
   
-  
-
   
 
   
@@ -41,7 +38,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" href="pitch_onset.html" />
+    <link rel="next" title="Filterbank Generation (synctoolbox.feature.filterbank)" href="filterbank.html" />
     <link rel="prev" title="Feature Extraction (synctoolbox.feature)" href="index.html" /> 
 </head>
 
@@ -90,18 +87,21 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Feature Extraction (synctoolbox.feature)</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Chroma Features (synctoolbox.feature.chroma)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filterbank.html">Filterbank Generation (synctoolbox.feature.filterbank)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pitch.html">Pitch Features (synctoolbox.feature.pitch)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pitch_onset.html">Pitch Onset Features (synctoolbox.feature.pitch_onset)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dlnco.html">DLNCO Features (synctoolbox.feature.dlnco)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csv_tools.html">CSV Tools (synctoolbox.feature.csv_tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils (synctoolbox.feature.utils)</a></li>
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../py-modindex.html">Module Index</a></li>
@@ -145,8 +145,6 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -160,7 +158,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/feature/chroma.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -177,8 +175,8 @@
   <div class="section" id="module-synctoolbox.feature.chroma">
 <span id="chroma-features-synctoolbox-feature-chroma"></span><h1>Chroma Features (synctoolbox.feature.chroma)<a class="headerlink" href="#module-synctoolbox.feature.chroma" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="synctoolbox.feature.chroma.pitch_to_CENS">
-<span class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></span><span class="sig-name descname"><span class="pre">pitch_to_CENS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_pitch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win_len_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsamp_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([40,</span> <span class="pre">20,</span> <span class="pre">10,</span> <span class="pre">5])</span> <span class="pre">/</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1])</span> <span class="pre">/</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#pitch_to_CENS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.pitch_to_CENS" title="Permalink to this definition">¶</a></dt>
+<dt id="synctoolbox.feature.chroma.pitch_to_CENS">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></code><code class="sig-name descname"><span class="pre">pitch_to_CENS</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_pitch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win_len_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsamp_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([40,</span> <span class="pre">20,</span> <span class="pre">10,</span> <span class="pre">5])</span> <span class="pre">/</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1])</span> <span class="pre">/</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#pitch_to_CENS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.pitch_to_CENS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate CENS features from pitch features (CENS: Chroma Energy Normalized Statistics).</p>
 <p>The following is computed:</p>
 <blockquote>
@@ -225,8 +223,8 @@ are replaced with uniform vectors.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synctoolbox.feature.chroma.pitch_to_chroma">
-<span class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></span><span class="sig-name descname"><span class="pre">pitch_to_chroma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_pitch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#pitch_to_chroma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.pitch_to_chroma" title="Permalink to this definition">¶</a></dt>
+<dt id="synctoolbox.feature.chroma.pitch_to_chroma">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></code><code class="sig-name descname"><span class="pre">pitch_to_chroma</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_pitch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midi_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">108</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">numpy.ndarray</span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#pitch_to_chroma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.pitch_to_chroma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Aggregate pitch-based features into chroma bands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -245,8 +243,8 @@ aggregated into chroma bands.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synctoolbox.feature.chroma.quantize_chroma">
-<span class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></span><span class="sig-name descname"><span class="pre">quantize_chroma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([40,</span> <span class="pre">20,</span> <span class="pre">10,</span> <span class="pre">5])</span> <span class="pre">/</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1])</span> <span class="pre">/</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#quantize_chroma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.quantize_chroma" title="Permalink to this definition">¶</a></dt>
+<dt id="synctoolbox.feature.chroma.quantize_chroma">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></code><code class="sig-name descname"><span class="pre">quantize_chroma</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_chroma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([40,</span> <span class="pre">20,</span> <span class="pre">10,</span> <span class="pre">5])</span> <span class="pre">/</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quant_weights</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.array([1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1])</span> <span class="pre">/</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">numpy.ndarray</span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#quantize_chroma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.quantize_chroma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes thresholded l1-normalization of the chroma vectors and then applies
 component-wise quantization of the normalized chroma vectors.</p>
 <dl class="field-list simple">
@@ -267,8 +265,8 @@ as noise and set to 0.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synctoolbox.feature.chroma.quantized_chroma_to_CENS">
-<span class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></span><span class="sig-name descname"><span class="pre">quantized_chroma_to_CENS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_chroma_quantized</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win_len_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsamp_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#quantized_chroma_to_CENS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.quantized_chroma_to_CENS" title="Permalink to this definition">¶</a></dt>
+<dt id="synctoolbox.feature.chroma.quantized_chroma_to_CENS">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.chroma.</span></code><code class="sig-name descname"><span class="pre">quantized_chroma_to_CENS</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_chroma_quantized</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">win_len_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsamp_smooth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_thresh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/synctoolbox/feature/chroma.html#quantized_chroma_to_CENS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.chroma.quantized_chroma_to_CENS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Smooths, downsamples, and normalizes a chroma sequence obtained e.g. through <code class="docutils literal notranslate"><span class="pre">quantize_chroma</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -297,29 +295,37 @@ are replaced with uniform vectors.</p></li>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="pitch_onset.html" class="btn btn-neutral float-right" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="index.html" class="btn btn-neutral float-left" title="Feature Extraction (synctoolbox.feature)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="filterbank.html" class="btn btn-neutral float-right" title="Filterbank Generation (synctoolbox.feature.filterbank)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Feature Extraction (synctoolbox.feature)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger.
+        
+        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
 
     </p>
   </div>
     
     
     
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 

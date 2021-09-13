@@ -7,6 +7,9 @@ Feature Extraction (synctoolbox.feature)
     :hidden:
 
     chroma
+    filterbank
+    pitch
     pitch_onset
     dlnco
     csv_tools
+    utils
