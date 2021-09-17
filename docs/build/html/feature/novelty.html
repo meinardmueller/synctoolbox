@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spectral Flux (synctoolbox.feature.novelty) &mdash; SyncToolbox 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CSV Tools (synctoolbox.feature.csv_tools)" href="csv_tools.html" />
+    <link rel="prev" title="DLNCO Features (synctoolbox.feature.dlnco)" href="dlnco.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/audiolabs.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dtw.html">Dynamic Time Warping (synctoolbox.dtw)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Feature Extraction (synctoolbox.feature)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="chroma.html">Chroma Features (synctoolbox.feature.chroma)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filterbank.html">Filterbank Generation (synctoolbox.feature.filterbank)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pitch.html">Pitch Features (synctoolbox.feature.pitch)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pitch_onset.html">Pitch Onset Features (synctoolbox.feature.pitch_onset)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dlnco.html">DLNCO Features (synctoolbox.feature.dlnco)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Spectral Flux (synctoolbox.feature.novelty)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csv_tools.html">CSV Tools (synctoolbox.feature.csv_tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils (synctoolbox.feature.utils)</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../py-modindex.html">Module Index</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SyncToolbox</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Feature Extraction (synctoolbox.feature)</a> &raquo;</li>
+        
+      <li>Spectral Flux (synctoolbox.feature.novelty)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/feature/novelty.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-synctoolbox.feature.novelty">
+<span id="spectral-flux-synctoolbox-feature-novelty"></span><h1>Spectral Flux (synctoolbox.feature.novelty)<a class="headerlink" href="#module-synctoolbox.feature.novelty" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="synctoolbox.feature.novelty.spectral_flux">
+<code class="sig-prename descclassname"><span class="pre">synctoolbox.feature.novelty.</span></code><code class="sig-name descname"><span class="pre">spectral_flux</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_audio</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Fs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">22050</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_rate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M_sec</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_coeff</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">np.sqrt(1</span> <span class="pre">/</span> <span class="pre">np.arange(1,</span> <span class="pre">11))</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">numpy.ndarray</span><a class="reference internal" href="../_modules/synctoolbox/feature/novelty.html#spectral_flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synctoolbox.feature.novelty.spectral_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the spectral-based novelty curve given an audio array.</p>
+<p>This function is based on the FMP notebook on “Spectral-Based Novelty”:
+<a class="reference external" href="https://www.audiolabs-erlangen.de/resources/MIR/FMP/C6/C6S1_NoveltySpectral.html">https://www.audiolabs-erlangen.de/resources/MIR/FMP/C6/C6S1_NoveltySpectral.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_audio</strong> (<em>np.ndarray</em>) – One dimensional f_audio array (mono)</p></li>
+<li><p><strong>Fs</strong> (<em>float</em>) – Sampling rate of <code class="docutils literal notranslate"><span class="pre">f_audio</span></code> (in Hz)</p></li>
+<li><p><strong>feature_rate</strong> (<em>int</em>) – Features per second</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Log compression factor</p></li>
+<li><p><strong>M_sec</strong> (<em>float</em>) – Determines size (2M+1) in samples of centric window  used for local average</p></li>
+<li><p><strong>filter_coeff</strong> (<em>np.ndarray</em>) – Sequence of decay coefficients applied on normalized chroma onsets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sf</strong> (<em>np.ndarray [shape=(N, )]</em>) – Enhanced novelty curve with the subtraction of a local averagenad a temporal decay</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="csv_tools.html" class="btn btn-neutral float-right" title="CSV Tools (synctoolbox.feature.csv_tools)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dlnco.html" class="btn btn-neutral float-left" title="DLNCO Features (synctoolbox.feature.dlnco)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
