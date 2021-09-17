@@ -11,5 +11,6 @@ Feature Extraction (synctoolbox.feature)
     pitch
     pitch_onset
     dlnco
+    novelty
     csv_tools
     utils

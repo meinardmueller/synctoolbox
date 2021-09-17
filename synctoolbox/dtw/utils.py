@@ -81,8 +81,8 @@ def compute_warping_paths_from_cost_matrices(cost_matrices: list,
 def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
                                           f_chroma2: np.ndarray,
                                           anchors: np.ndarray,
-                                          f_DLNCO1: np.ndarray = None,
-                                          f_DLNCO2: np.ndarray = None) -> list:
+                                          f_onset1: np.ndarray = None,
+                                          f_onset2: np.ndarray = None) -> list:
     """Computes cost matrices for the given features between subsequent
     pairs of anchors points.
 
@@ -97,11 +97,11 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
     anchors : np.ndarray [shape=(2, R)]
         Anchor sequence
 
-    f_DLNCO1 : np.ndarray [shape=(12, N)]
-        DLNCO feature matrix of the first sequence
+    f_onset1 : np.ndarray [shape=(L, N)]
+        Onset feature matrix of the first sequence
 
-    f_DLNCO2 : np.ndarray [shape=(12, M)]
-        DLNCO feature matrix of the second sequence
+    f_onset2 : np.ndarray [shape=(L, M)]
+        Onset feature matrix of the second sequence
 
     Returns
     -------
@@ -109,7 +109,7 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
         List containing cost matrices
     """
     high_res = False
-    if f_DLNCO1 is not None and f_DLNCO2 is not None:
+    if f_onset1 is not None and f_onset2 is not None:
         high_res = True
 
     cost_matrices = list()
@@ -118,12 +118,10 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
         a2 = np.array(anchors[:, k + 1].astype(int), copy=True)
 
         if high_res:
-            if f_chroma1.shape != f_DLNCO1.shape or f_chroma2.shape != f_DLNCO2.shape:
-                raise ValueError('Chroma features and DLNCO features must be of the same shape.')
             cost_matrices.append(compute_high_res_cost_matrix(f_chroma1[:, a1[0]: a2[0] + 1],
                                                               f_chroma2[:, a1[1]: a2[1] + 1],
-                                                              f_DLNCO1[:, a1[0]: a2[0] + 1],
-                                                              f_DLNCO2[:, a1[1]: a2[1] + 1]))
+                                                              f_onset1[:, a1[0]: a2[0] + 1],
+                                                              f_onset2[:, a1[1]: a2[1] + 1]))
         else:
             cost_matrices.append(cosine_distance(f_chroma1[:, a1[0]: a2[0] + 1],
                                                  f_chroma2[:, a1[1]: a2[1] + 1]))

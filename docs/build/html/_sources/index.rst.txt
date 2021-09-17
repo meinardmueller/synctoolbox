@@ -34,7 +34,7 @@ In particular, please note the provided Readme and the example notebooks.
 If you use SyncToolbox in a scholarly work, please consider citing the Sync Toolbox article. [#]_
 
 
-.. [#] 2021, Article
+.. [#] Müller et al., (2021). Sync Toolbox: A Python Package for Efficient, Robust, and Accurate Music Synchronization. Journal of Open Source Software, 6(64), 3434, https://doi.org/10.21105/joss.03434
 
 .. toctree::
     :caption: API Documentation

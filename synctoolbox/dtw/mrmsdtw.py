@@ -11,8 +11,8 @@ from synctoolbox.feature.utils import smooth_downsample_feature, normalize_featu
 
 def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                      f_chroma2: np.ndarray,
-                     f_DLNCO1: np.ndarray = None,
-                     f_DLNCO2: np.ndarray = None,
+                     f_onset1: np.ndarray = None,
+                     f_onset2: np.ndarray = None,
                      input_feature_rate: float = 50,
                      step_sizes: np.ndarray = np.array([[1, 0], [0, 1], [1, 1]], np.int32),
                      step_weights: np.ndarray = np.array([1.0, 1.0, 1.0], np.float64),
@@ -23,10 +23,10 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                      normalize_chroma: bool = True,
                      chroma_norm_ord: int = 2,
                      chroma_norm_threshold: float = 0.001):
-    """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) DLNCO features.
+    """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
     MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
     regions defined by the alignment found on the previous, coarser level.
-    If DLNCO features are provided, these are used on the finest level in addition to chroma
+    If onset features are provided, these are used on the finest level in addition to chroma
     to provide higher synchronization accuracy.
 
     Parameters
@@ -37,11 +37,11 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
     f_chroma2 : np.ndarray [shape=(12, M)]
         Chroma feature matrix of the second sequence
 
-    f_DLNCO1 : np.ndarray [shape=(12, N)]
-        DLNCO feature matrix of the first sequence (optional, default: None)
+    f_onset1 : np.ndarray [shape=(L, N)]
+        Onset feature matrix of the first sequence (optional, default: None)
 
-    f_DLNCO2 : np.ndarray [shape=(12, M)]
-        DLNCO feature matrix of the second sequence (optional, default: None)
+    f_onset2 : np.ndarray [shape=(L, M)]
+        Onset feature matrix of the second sequence (optional, default: None)
 
     input_feature_rate: float
         Input feature rate of the chroma features (default: 50)
@@ -86,13 +86,13 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
     alignment : np.ndarray [shape=(2, T)]
         Resulting warping path
     """
-    # If DLNCO features are given as input, high resolution MrMsDTW is activated.
+    # If onset features are given as input, high resolution MrMsDTW is activated.
     high_res = False
-    if f_DLNCO1 is not None and f_DLNCO2 is not None:
+    if f_onset1 is not None and f_onset2 is not None:
         high_res = True
 
-    if high_res and (f_chroma1.shape[1] != f_DLNCO1.shape[1] or f_chroma2.shape[1] != f_DLNCO2.shape[1]):
-        raise ValueError('Chroma and DLNCO features must be of the same length.')
+    if high_res and (f_chroma1.shape[1] != f_onset1.shape[1] or f_chroma2.shape[1] != f_onset2.shape[1]):
+        raise ValueError('Chroma and onset features must be of the same length.')
 
     if downsamp_smooth[-1] != 1 or win_len_smooth[-1] != 1:
         raise ValueError('The downsampling factor of the last iteration must be equal to 1, i.e.'
@@ -150,8 +150,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
             # where the features are at the finest level.
             cost_matrices_step1 = compute_cost_matrices_between_anchors(f_chroma1=f_chroma1_cur,
                                                                         f_chroma2=f_chroma2_cur,
-                                                                        f_DLNCO1=f_DLNCO1,
-                                                                        f_DLNCO2=f_DLNCO2,
+                                                                        f_onset1=f_onset1,
+                                                                        f_onset2=f_onset2,
                                                                         anchors=anchors)
 
         else:
@@ -198,8 +198,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                 and it == num_iterations - 1 and high_res:
             cost_matrices_step2 = compute_cost_matrices_between_anchors(f_chroma1=f_chroma1_cur,
                                                                         f_chroma2=f_chroma2_cur,
-                                                                        f_DLNCO1=f_DLNCO1,
-                                                                        f_DLNCO2=f_DLNCO2,
+                                                                        f_onset1=f_onset1,
+                                                                        f_onset2=f_onset2,
                                                                         anchors=neighboring_anchors)
 
         else:
