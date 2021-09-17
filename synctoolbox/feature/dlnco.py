@@ -55,7 +55,7 @@ def pitch_onset_features_to_DLNCO(f_peaks: dict,
     LN_maxfilterthresh : float
         Minimum threshold for normalizing chroma onsets using local norm.
 
-    DLNCO_filtercoef : float
+    DLNCO_filtercoef : np.ndarray
         Sequence of decay coefficients applied on normalized chroma onsets.
 
     visualize : bool

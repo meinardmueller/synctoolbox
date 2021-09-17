@@ -38,7 +38,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="CSV Tools (synctoolbox.feature.csv_tools)" href="csv_tools.html" />
+    <link rel="next" title="Spectral Flux (synctoolbox.feature.novelty)" href="novelty.html" />
     <link rel="prev" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" href="pitch_onset.html" /> 
 </head>
 
@@ -96,6 +96,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pitch.html">Pitch Features (synctoolbox.feature.pitch)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pitch_onset.html">Pitch Onset Features (synctoolbox.feature.pitch_onset)</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">DLNCO Features (synctoolbox.feature.dlnco)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="novelty.html">Spectral Flux (synctoolbox.feature.novelty)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csv_tools.html">CSV Tools (synctoolbox.feature.csv_tools)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">Utils (synctoolbox.feature.utils)</a></li>
 </ul>
@@ -207,7 +208,7 @@ position of the last peak in <code class="docutils literal notranslate"><span cl
 <li><p><strong>chroma_norm_ord</strong> (<em>int</em>) – Order of the norm used for chroma onset vectors.</p></li>
 <li><p><strong>LN_maxfilterlength_seconds</strong> (<em>float</em>) – Length of the maximum filter applied for determining local norm of chroma onsets in seconds.</p></li>
 <li><p><strong>LN_maxfilterthresh</strong> (<em>float</em>) – Minimum threshold for normalizing chroma onsets using local norm.</p></li>
-<li><p><strong>DLNCO_filtercoef</strong> (<em>float</em>) – Sequence of decay coefficients applied on normalized chroma onsets.</p></li>
+<li><p><strong>DLNCO_filtercoef</strong> (<em>np.ndarray</em>) – Sequence of decay coefficients applied on normalized chroma onsets.</p></li>
 <li><p><strong>visualize</strong> (<em>bool</em>) – Set <cite>True</cite> to visualize chroma onset features (Default: False)</p></li>
 </ul>
 </dd>
@@ -227,7 +228,7 @@ position of the last peak in <code class="docutils literal notranslate"><span cl
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="csv_tools.html" class="btn btn-neutral float-right" title="CSV Tools (synctoolbox.feature.csv_tools)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="novelty.html" class="btn btn-neutral float-right" title="Spectral Flux (synctoolbox.feature.novelty)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="pitch_onset.html" class="btn btn-neutral float-left" title="Pitch Onset Features (synctoolbox.feature.pitch_onset)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
