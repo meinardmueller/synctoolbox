@@ -35,6 +35,8 @@ def compute_optimal_chroma_shift(f_chroma1: np.ndarray,
     opt_chroma_shift : int
         Optimal chroma shift which minimizes the DTW cost.
     """
+    if f_chroma2.shape[1] >= 9000 or f_chroma1.shape[1] >= 9000:
+        print("Warning: You are attempting to find the optimal chroma shift on sequences of length >= 9000. This involves full DTW computation. You'll probably want to smooth and downsample your sequences to a lower feature resolution before doing this.")
     opt_chroma_shift = 0
     dtw_cost = np.inf
     for chroma_shift in chroma_transpositions:
@@ -245,3 +247,47 @@ def make_path_strictly_monotonic(P: np.ndarray) -> np.ndarray:
     P_mod = compute_strict_alignment_path_mask(P.T)
 
     return P_mod.T
+
+
+def evaluate_synchronized_positions(ground_truth_positions: np.ndarray, synchronized_positions: np.ndarray, tolerances: list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 250]):
+    """Compute standard evaluation measures for evaluating the quality of synchronized (musical) positions.
+
+    When synchronizing two versions of a piece of music, one can evaluate the quality of the resulting alignment
+    by comparing errors at musical positions (e.g. beats or measures) that appear in both versions.
+    This function implements two measures: mean absolute error at positions and the percentage of correctly transferred measures given a threshold.
+
+    Parameters
+    ----------
+    ground_truth_positions: np.ndarray [shape=N]
+        Positions (e.g. beat or measure positions) annotated in the target version of a piece of music, in milliseconds.
+
+    synchronized_positions: np.ndarray [shape=N]
+        The same musical positions as in 'ground_truth_positions' obtained by transfer using music synchronization, in milliseconds.
+
+    tolerances: list of integers
+        Tolerances (in miliseconds) used for comparing annotated and synchronized positions.
+
+    Returns
+    -------
+    mean_absolute_error: float
+        Mean absolute error for synchronized positions, in miliseconds.
+
+    accuracy_at_tolerances: list of floats
+        Percentages of correctly transferred measures, for each entry in 'tolerances'.
+
+    """
+    absolute_errors_at_positions = np.abs(synchronized_positions - ground_truth_positions)
+
+    print('Measure transfer from recording 1 to 2 yielded:')
+    mean_absolute_error = np.mean(absolute_errors_at_positions)
+    print('\nMean absolute error (MAE): %.2fms (standard deviation: %.2fms)' % (mean_absolute_error, np.std(absolute_errors_at_positions)))
+    print('\nAccuracy of transferred positions at different tolerances:')
+    print('\t\t\tAccuracy')
+    print('################################')
+    accuracy_at_tolerances = []
+    for tolerance in tolerances:
+        accuracy = np.mean((absolute_errors_at_positions < tolerance)) * 100.0
+        accuracy_at_tolerances.append(accuracy)
+        print('Tolerance: {} ms \t{:.2f} %'.format(tolerance, accuracy))
+
+    return mean_absolute_error, accuracy_at_tolerances
