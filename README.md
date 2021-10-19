@@ -12,6 +12,9 @@ If you use the Sync Toolbox in your research, please consider the following refe
 
 ## References
 
+Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich, and Jonathan Driedger.
+and Frank Zalkow. [Sync Toolbox: A Python Package for Efficient, Robust, and Accurate Music Synchronization.](https://joss.theoj.org/papers/10.21105/joss.03434) Journal of Open Source Software (JOSS), 6(64), 2021.
+
 Meinard Müller, Henning Mattes, and Frank Kurth.
 [An Efficient Multiscale Approach to Audio Synchronization](https://www.audiolabs-erlangen.de/fau/professor/mueller/publications/2006_MuellerMattesKurth_MultiscaleAudioSynchronization_ISMIR.pdf).
 In Proceedings of the International Society for Music Information Retrieval Conference (ISMIR): 192–197, 2006.
