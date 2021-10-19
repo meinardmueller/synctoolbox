@@ -36,7 +36,14 @@ To install the Sync Toolbox locally, you can use the Python package manager pip:
 ```
 pip install synctoolbox
 ```
-We recommend to do this inside a conda or virtual environment. **Note:** On some systems, you may see errors related with ``soundfile`` when calling some functions or executing our example notebooks. ``soundfile`` is a dependency of ``librosa``, which is used by the Sync Toolbox. In case of errors, you may have to install libsndfile using your package manager, e.g., ``sudo apt install libsndfile1``. Alternatively, you may create a conda environment, install ``librosa`` using conda and then install the Sync Toolbox with the pip command from above. See [here](https://github.com/librosa/librosa#hints-for-the-installation) for further information if you are experiencing these issues.
+
+We recommend to do this inside a conda or virtual environment (requiring at least Python 3.7). As an alternative, you may also create the environment ``synctoolbox`` as provided by the file ``environment.yml`` (which includes the synctoolbox package as well as the jupyter package to run the demo files):
+
+```
+conda env create -f environment.yml
+```
+
+**Note:** On some systems, you may see errors related with ``soundfile`` when calling some functions or executing our example notebooks. ``soundfile`` is a dependency of ``librosa``, which is used by the Sync Toolbox. In case of errors, you may have to install libsndfile using your package manager, e.g., ``sudo apt install libsndfile1``. Alternatively, you may create a conda environment, install ``librosa`` using conda and then install the Sync Toolbox with the pip command from above. See [here](https://github.com/librosa/librosa#hints-for-the-installation) for further information if you are experiencing these issues.
 
 
 If you want to run the example notebooks locally, you **must** first install the Sync Toolbox to resolve all dependencies. Then, you can clone this repository using
