@@ -74,7 +74,7 @@ html_static_path = ['_static']
 html_use_index = True
 html_use_modindex = True
 
-html_logo = os.path.join(html_static_path[0], 'audiolabs.png')
+html_logo = os.path.join(html_static_path[0], 'logo_synctoolbox.png')
 
 html_theme_options = {'logo_only': True}
 
