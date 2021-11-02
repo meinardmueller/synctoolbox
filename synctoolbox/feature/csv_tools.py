@@ -104,9 +104,11 @@ def df_to_pitch_features(df: pd.DataFrame,
             raise ValueError(f'The pitch for note {pitch} at time point {start_time_ms/ 1000} sec is not valid.')
 
         # TODO: ATTENTION TO INDEXING!
-        if instrument == 'percussive' and not ignore_percussion:
-            for cur_win in range(first_window_involved, np.minimum(first_window_involved + 1, num_pitch_features) + 1):
-                f_pitch[pitch, cur_win-1] = __compute_pitch_energy(cur_energy_val=f_pitch[pitch, cur_win - 1],
+        if instrument == 'percussive':
+            # TODO The code for percussive events is not well tested!
+            if not ignore_percussion:
+                for cur_win in range(first_window_involved, np.minimum(first_window_involved + 1, num_pitch_features) + 1):
+                    f_pitch[:, cur_win-1] = __compute_pitch_energy(cur_energy_val=f_pitch[:, cur_win - 1],
                                                                    cur_win=cur_win,
                                                                    start_time_ms=start_time_ms,
                                                                    end_time_ms=end_time_ms,
@@ -177,9 +179,9 @@ def df_to_pitch_onset_features(df: pd.DataFrame,
     f_peaks : dict
         A dictionary of onset peaks, see 'audio_to_pitch_onset_features' for the exact format
     """
-    num_peaks_in_pitch = dict()
+    peak_height_scale_factor_percussion = peak_height_scale_factor * 10
+    num_peaks_in_pitch = {pitch: 0 for pitch in range(1, 129)}
     f_peaks = dict()
-    num_percussive_notes = 0
 
     for _, row in df.iterrows():
         start_time_ms = 1000 * row['start']
@@ -190,29 +192,28 @@ def df_to_pitch_onset_features(df: pd.DataFrame,
         if not midi_max >= pitch >= midi_min:
             raise ValueError(f'The pitch for note {pitch} at timepoint {start_time_ms/ 1000} sec is not valid.')
 
-        if instrument == 'percussive' and not ignore_percussion:
-            num_percussive_notes += 1
-            raise NotImplementedError()
-            # TODO
-            pass
+        def add_peak_for_pitch(p, scale_factor=peak_height_scale_factor):
+            num_peaks_in_pitch[p] += 1
 
+            if num_peaks_in_pitch[p] > 0:
+                if p not in f_peaks:
+                    f_peaks[p] = np.zeros((2, 1000))
+                if num_peaks_in_pitch[p] > f_peaks[p].shape[1]:
+                    f_peaks[p] = np.concatenate([f_peaks[p], np.zeros((2, 1000))], axis=1)
+
+            if p not in f_peaks or f_peaks[p].size == 0:
+                f_peaks[p] = np.array([[start_time_ms], [velocity / scale_factor]], np.float64)
+            else:
+                f_peaks[p][0, num_peaks_in_pitch[p] - 1] = start_time_ms
+                f_peaks[p][1, num_peaks_in_pitch[p] - 1] = velocity / scale_factor
+
+        if instrument == 'percussive':
+            # TODO The code for percussive events is not well tested!
+            if not ignore_percussion:
+                for p in range(1, 129):
+                    add_peak_for_pitch(p, peak_height_scale_factor_percussion)
         else:
-            if pitch not in num_peaks_in_pitch:
-                num_peaks_in_pitch[pitch] = 1
-            else:
-                num_peaks_in_pitch[pitch] += 1
-
-            if num_peaks_in_pitch[pitch] > 0:
-                if pitch not in f_peaks:
-                    f_peaks[pitch] = np.zeros((2, 1000))
-                if num_peaks_in_pitch[pitch] > f_peaks[pitch].shape[1]:
-                    f_peaks[pitch] = np.concatenate([f_peaks[pitch], np.zeros((2, 1000))], axis=1)
-
-            if pitch not in f_peaks or f_peaks[pitch].size == 0:
-                f_peaks[pitch] = np.array([[start_time_ms], [velocity / peak_height_scale_factor]], np.float64)
-            else:
-                f_peaks[pitch][0, num_peaks_in_pitch[pitch]-1] = start_time_ms
-                f_peaks[pitch][1, num_peaks_in_pitch[pitch]-1] = velocity / peak_height_scale_factor
+            add_peak_for_pitch(pitch)
 
     for pitch in f_peaks:
         time_vals = f_peaks[pitch][0, :][0: num_peaks_in_pitch[pitch]]
@@ -281,20 +282,20 @@ def __compute_pitch_energy(cur_energy_val: float,
     contribution = (np.minimum(end_time_ms, right_border_cur_win_ms) -
                     np.maximum(start_time_ms, left_border_cur_win_ms)) / (2 * stepsize_ms)
 
-    # Add energy equally distributed to all pitches
-    # Since we assume the percussive sound to be short,
-    # we just add energy to the first relevant Window
     if is_percussive:
-        res = cur_energy_val + (velocity / 120) * contribution
-
-    # If not percussive,
-    # add energy for this note to features
-    # assume constant note energy throughout the whole note
-    #  this may later be improved to an ADSR model
-    elif ignore_velocity:
-        res = 1.0
+        # Add energy equally distributed to all pitches
+        # Since we assume the percussive sound to be short,
+        # we just add energy to the first relevant Window
+        res = cur_energy_val + (velocity / 128) * contribution
     else:
-        res = cur_energy_val + velocity * contribution
+        # If not percussive,
+        # add energy for this note to features
+        # assume constant note energy throughout the whole note
+        #  this may later be improved to an ADSR model
+        if ignore_velocity:
+            res = 1.0
+        else:
+            res = cur_energy_val + velocity * contribution
 
     return res
 
