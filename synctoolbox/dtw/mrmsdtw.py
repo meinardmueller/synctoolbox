@@ -22,7 +22,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                      dtw_implementation: str = 'synctoolbox',
                      normalize_chroma: bool = True,
                      chroma_norm_ord: int = 2,
-                     chroma_norm_threshold: float = 0.001):
+                     chroma_norm_threshold: float = 0.001,
+                     visualization_title: str = "MrMsDTW result"):
     """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
     MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
     regions defined by the alignment found on the previous, coarser level.
@@ -80,6 +81,10 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
         If the norm falls below threshold for a feature vector, then the
         normalized feature vector is set to be the unit vector. Relevant, if
         ``normalize_chroma`` is True (default: 0.001)
+
+    visualization_title : str
+        Title for the visualization plots. Only relevant if 'verbose' is True
+        (default: "MrMsDTW result")
 
     Returns
     -------
@@ -230,7 +235,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                                  num_rows_step1,
                                  num_cols_step1,
                                  anchors_step1,
-                                 neighboring_anchors)
+                                 neighboring_anchors,
+                                 plot_title=f"{visualization_title} - Level {it + 1}")
             print('Level {} computation time: {:.2f} seconds'.format(it, computation_time_it))
 
     if verbose:

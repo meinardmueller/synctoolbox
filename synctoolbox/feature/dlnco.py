@@ -146,6 +146,7 @@ def __visualize_LN_features(f_N: np.ndarray,
                             num_feature: int,
                             res: int,
                             ax: plt.Axes = None):
+    tight_layouten = ax is None
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(9, 3), dpi=72)
 
@@ -159,6 +160,8 @@ def __visualize_LN_features(f_N: np.ndarray,
     ax.set_title('Local Norm of CO')
     ax.set_xlabel('Time (seconds)')
     ax.set_ylabel('Norm')
+    if tight_layouten:
+        plt.tight_layout()
 
 
 def __matlab_round(x: float = None) -> int:

@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+from synctoolbox.feature.pitch import __visualize_pitch
+from synctoolbox.feature.pitch_onset import __f_peaks_to_matrix
+import matplotlib.pyplot as plt
 
 
 def read_csv_to_df(csv_filepath: str = '',
@@ -37,7 +40,9 @@ def df_to_pitch_features(df: pd.DataFrame,
                          midi_max: int = 108,
                          transpose: int = 0,
                          ignore_velocity: bool = False,
-                         ignore_percussion: bool = False) -> np.ndarray:
+                         ignore_percussion: bool = False,
+                         visualize: bool = False,
+                         visualization_title: str = "Pitch features") -> np.ndarray:
     """ Computes pitch-based features for a dataframe containing symbolic music.
     The resulting features have the same format as the output of 'audio_to_pitch_features'
     for audio.
@@ -66,6 +71,12 @@ def df_to_pitch_features(df: pd.DataFrame,
 
     ignore_percussion : bool
         Ignores percussion. If `True`, no features are generated for percussive events.
+
+    visualize : bool
+        Set `True` to activate the visualization of features
+
+    visualization_title : str
+        Title for the visualization plot. Only relevant if 'visualize' is True
 
     Returns
     -------
@@ -113,6 +124,10 @@ def df_to_pitch_features(df: pd.DataFrame,
                                                                    stepsize_ms=stepsize_ms,
                                                                    ignore_velocity=ignore_velocity)
 
+    if visualize:
+        __visualize_pitch(f_pitch, feature_rate=feature_rate, plot_title=visualization_title)
+        plt.show()
+
     return f_pitch
 
 
@@ -121,7 +136,9 @@ def df_to_pitch_onset_features(df: pd.DataFrame,
                                midi_max: int = 108,
                                transpose: int = 0,
                                ignore_percussion: bool = False,
-                               peak_height_scale_factor: float = 1e6) -> dict:
+                               peak_height_scale_factor: float = 1e6,
+                               visualize: bool = False,
+                               visualization_title: str = "Pitch features") -> dict:
     """Computes pitch-based onset features for a dataframe containing symbolic music.
     The resulting features have the same format as the output of 'audio_to_pitch_onset_features'
     for audio.
@@ -148,6 +165,12 @@ def df_to_pitch_onset_features(df: pd.DataFrame,
         Scales the midi velocity so the resulting feature values
         are in a similar range than the peak features from an audio file
         So 1e6 is more or less arbitrary.
+
+    visualize : bool
+        Set `True` to activate the visualization of features
+
+    visualization_title : str
+        Title for the visualization plot. Only relevant if 'visualize' is True
 
     Returns
     -------
@@ -199,6 +222,12 @@ def df_to_pitch_onset_features(df: pd.DataFrame,
         sort_index = np.argsort(f_peaks[pitch][0, :])
         f_peaks[pitch][0, :] = f_peaks[pitch][0, :][sort_index]
         f_peaks[pitch][1, :] = f_peaks[pitch][1, :][sort_index]
+
+    if visualize:
+        highest_time_res = 50 / 22050  # TODO don't hardcode this, identify appropriate resolution based on df
+        imagedata = __f_peaks_to_matrix(np.max(df["start"] + df["duration"]), f_peaks, highest_time_res, midi_max, midi_min)
+        __visualize_pitch(imagedata.T, midi_min, midi_max, feature_rate=1 / highest_time_res, plot_title=visualization_title)
+        plt.show()
 
     return f_peaks
 

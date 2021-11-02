@@ -33,7 +33,8 @@ def sync_visualize_step2(ax: plt.Axes,
                          num_rows_step1: int,
                          num_cols_step1: int,
                          anchors_step1: np.ndarray,
-                         neighboring_anchors: np.ndarray):
+                         neighboring_anchors: np.ndarray,
+                         plot_title: str = ""):
 
     offset_x = neighboring_anchors[0, 0] - 1
     offset_y = neighboring_anchors[1, 0] - 1
@@ -60,6 +61,10 @@ def sync_visualize_step2(ax: plt.Axes,
                                axisX=np.arange(0, num_rows_step1),
                                axisY=np.arange(0, num_cols_step1),
                                path_color='orangered')
+
+    ax.set_title(plot_title)
+    ax.set_ylabel("Version 1 (frames)")
+    ax.set_xlabel("Version 2 (frames)")
 
     ax = plt.gca()  # get the current axes
     pcm = None

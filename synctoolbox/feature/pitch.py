@@ -26,7 +26,8 @@ def audio_to_pitch_features(f_audio: np.ndarray,
                             midi_min: int = 21,
                             midi_max: int = 108,
                             tuning_offset: int = 0,
-                            verbose: bool = False) -> np.ndarray:
+                            verbose: bool = False,
+                            visualization_title: str = "Pitch features") -> np.ndarray:
     """Computes pitch-based features via an IIR filterbank aggregated as STMSP
     (short-time mean-square power). The signal is decomposed into subbands that
     correspond to MIDI pitches between midi_min and midi_max.
@@ -56,6 +57,9 @@ def audio_to_pitch_features(f_audio: np.ndarray,
 
     verbose : bool
         Set `True` to activate the visualization of features
+
+    visualization_title : str
+        Title for the visualization plot. Only relevant if 'verbose' is True
 
     Returns
     -------
@@ -101,7 +105,7 @@ def audio_to_pitch_features(f_audio: np.ndarray,
 
     if verbose:
         print("")
-        __visualize_pitch(f_pitch, feature_rate=feature_rate)
+        __visualize_pitch(f_pitch, feature_rate=feature_rate, plot_title=visualization_title)
         plt.show()
 
     return f_pitch
@@ -118,12 +122,12 @@ def __visualize_pitch(f_pitch: np.ndarray,
                       midi_max: int = 108,
                       feature_rate: float = 0,
                       use_pitch_name_labels: bool = False,
-                      y_tick: np.ndarray = np.array([21, 30, 40, 50, 60, 70, 80, 90, 100], int)):
+                      plot_title: str = "Pitch features"):
 
     f_image = f_pitch[midi_min:midi_max + 1, :]
 
     fig, ax, im = plot_matrix(X=f_image, extent=[0, f_pitch.shape[1]/feature_rate, midi_min, midi_max+1],
-                              title='Pitch Features', ylabel='MIDI Pitch', figsize=(9, 9),
+                              title=plot_title, ylabel='MIDI Pitch', xlabel="Time (seconds)", figsize=(9, 9),
                               colorbar_aspect=50)
 
     pitchscale = np.arange(midi_min, midi_max + 1)
@@ -132,6 +136,7 @@ def __visualize_pitch(f_pitch: np.ndarray,
     if use_pitch_name_labels:
         ax[0].set_yticks(np.arange(midi_min, midi_max + 1))
         ax[0].set_yticklabels(PITCH_NAME_LABELS[midi_min-1:midi_max], fontsize=12)
+        ax[0].set_ylabel("Pitch")
     else:
         ax[0].set_yticks(pitchscale[::2])
         ax[0].set_yticklabels(pitchscale[::2], fontsize=10)

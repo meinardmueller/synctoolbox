@@ -6,6 +6,7 @@ from numba import jit
 
 from synctoolbox.feature.filterbank import generate_list_of_downsampled_audio, get_fs_index,\
     generate_filterbank
+from synctoolbox.feature.pitch import __visualize_pitch
 
 EPS = np.finfo(float).eps
 
@@ -41,7 +42,8 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
                                   midi_max: int = 108,
                                   tuning_offset: float = 0,
                                   manual_offset: float = -25,
-                                  verbose: bool = False) -> dict:
+                                  verbose: bool = False,
+                                  visualization_title: str = "Pitch onset features") -> dict:
     """Computes pitch onset features based on an IIR filterbank. The signal is decomposed
     into subbands that correspond to MIDI pitches between midi_min and midi_max.
     After that, onsets for each MIDI pitch are calculated.
@@ -72,6 +74,9 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
 
     verbose : bool
         Set `True` to activate the visualization of features
+
+    visualization_title : str
+        Title for the visualization plot. Only relevant if 'verbose' is True
 
     Returns
     -------
@@ -166,41 +171,31 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
 
     if verbose:
         print("")
-        from libfmp.b import plot_matrix
         # There are three time resolution: one per sampling rate and window step size. This is the
         # highest time resolution that appairs (in sec). A base sampling rate of
         # 22050 and downsampling of factor 5 twice is assumed.
         highest_time_res = np.min(DOWNSAMPLING_FACTORS / np.array([Fs, Fs/5, Fs/25], np.float64))
-        time_grid_width = np.ceil(f_audio.size / Fs / highest_time_res).astype(int)
-        num_pitches = midi_max - midi_min + 1
-
-        imagedata = np.zeros((time_grid_width, num_pitches))
-
-        for midi_pitch in range(midi_min, midi_max + 1):
-            if midi_pitch not in f_peaks:
-                raise ValueError(f'MIDI Pitch {midi_pitch} cannot be found in the input array f_peaks!')
-
-            for k in range(f_peaks[midi_pitch].shape[1]):
-                timecoord = np.minimum(__ms2imagecoord(f_peaks[midi_pitch][0, k], highest_time_res), time_grid_width)\
-                    .astype(int)
-                imagedata[np.maximum(1, np.arange(timecoord-3, timecoord+4)), midi_pitch-midi_min] =\
-                    f_peaks[midi_pitch][1, k]
-
-        timescale = np.arange(0, time_grid_width) * highest_time_res - highest_time_res / 2
-        pitchscale = np.arange(midi_min, midi_max+1)
-        fig, ax, im = plot_matrix(imagedata.T + EPS,
-                                  figsize=(9, 9),
-                                  colorbar_aspect=50,
-                                  extent=[timescale[0], timescale[-1], midi_min, midi_max],
-                                  ylabel='MIDI pitch',
-                                  xlabel='Time (seconds)',
-                                  title='Pitch Onset Features',
-                                  cmap=compressed_gray_cmap(alpha=100))
-        ax[0].set_yticks(pitchscale[::2])
-        ax[0].set_yticklabels(pitchscale[::2], fontsize=10)
+        imagedata = __f_peaks_to_matrix(f_audio.size / Fs, f_peaks, highest_time_res, midi_max, midi_min)
+        __visualize_pitch(imagedata.T, midi_min, midi_max, feature_rate=1 / highest_time_res, plot_title=visualization_title)
         plt.show()
 
     return f_peaks
+
+
+def __f_peaks_to_matrix(max_length_sec, f_peaks, highest_time_res, midi_max, midi_min):
+    time_grid_width = np.ceil(max_length_sec / highest_time_res).astype(int)
+    num_pitches = midi_max - midi_min + 1
+    imagedata = np.zeros((time_grid_width, num_pitches))
+    for midi_pitch in range(midi_min, midi_max + 1):
+        if midi_pitch not in f_peaks:
+            continue
+
+        for k in range(f_peaks[midi_pitch].shape[1]):
+            timecoord = np.minimum(__ms2imagecoord(f_peaks[midi_pitch][0, k], highest_time_res), time_grid_width) \
+                .astype(int)
+            imagedata[np.maximum(1, np.arange(timecoord - 3, timecoord + 4)), midi_pitch - midi_min] = \
+                f_peaks[midi_pitch][1, k]
+    return imagedata
 
 
 def __ms2imagecoord(timems: float,
