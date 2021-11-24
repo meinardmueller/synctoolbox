@@ -60,10 +60,10 @@ def audio_to_pitch_features(f_audio: np.ndarray,
         Set `True` to activate the visualization of features
 
     visualization_title : str
-        Title for the visualization plot. Only relevant if 'verbose' is True
+        Title for the visualization plot. Only relevant if ``verbose`` is True
 
     visualization_log_gamma : float
-        Log compression gamma parameter for visualization. (relevant only if `verbose` is True.
+        Log compression gamma parameter for visualization. (relevant only if ``verbose`` is True.
 
     Returns
     -------
