@@ -1,4 +1,3 @@
-from libfmp.b import compressed_gray_cmap
 import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -43,7 +42,8 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
                                   tuning_offset: float = 0,
                                   manual_offset: float = -25,
                                   verbose: bool = False,
-                                  visualization_title: str = "Pitch onset features") -> dict:
+                                  visualization_title: str = "Pitch onset features",
+                                  visualization_log_gamma: float = 100.0) -> dict:
     """Computes pitch onset features based on an IIR filterbank. The signal is decomposed
     into subbands that correspond to MIDI pitches between midi_min and midi_max.
     After that, onsets for each MIDI pitch are calculated.
@@ -76,7 +76,10 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
         Set `True` to activate the visualization of features
 
     visualization_title : str
-        Title for the visualization plot. Only relevant if 'verbose' is True
+        Title for the visualization plot. Only relevant if `verbose` is True
+
+    visualization_log_gamma : float
+        Log compression gamma parameter for visualization. (relevant only if `verbose` is True.
 
     Returns
     -------
@@ -176,7 +179,8 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
         # 22050 and downsampling of factor 5 twice is assumed.
         highest_time_res = np.min(DOWNSAMPLING_FACTORS / np.array([Fs, Fs/5, Fs/25], np.float64))
         imagedata = __f_peaks_to_matrix(f_audio.size / Fs, f_peaks, highest_time_res, midi_max, midi_min)
-        __visualize_pitch(imagedata.T, midi_min, midi_max, feature_rate=1 / highest_time_res, plot_title=visualization_title)
+        __visualize_pitch(imagedata.T, midi_min, midi_max, feature_rate=1 / highest_time_res,
+                          plot_title=visualization_title, log_comp_gamma=visualization_log_gamma)
         plt.show()
 
     return f_peaks
