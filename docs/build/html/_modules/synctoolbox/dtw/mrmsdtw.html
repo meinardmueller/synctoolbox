@@ -95,7 +95,8 @@
                      <span class="n">dtw_implementation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;synctoolbox&#39;</span><span class="p">,</span>
                      <span class="n">normalize_chroma</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                      <span class="n">chroma_norm_ord</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-                     <span class="n">chroma_norm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">):</span>
+                     <span class="n">chroma_norm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+                     <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MrMsDTW result&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.</span>
 <span class="sd">    MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint</span>
 <span class="sd">    regions defined by the alignment found on the previous, coarser level.</span>
@@ -153,6 +154,10 @@
 <span class="sd">        If the norm falls below threshold for a feature vector, then the</span>
 <span class="sd">        normalized feature vector is set to be the unit vector. Relevant, if</span>
 <span class="sd">        ``normalize_chroma`` is True (default: 0.001)</span>
+
+<span class="sd">    visualization_title : str</span>
+<span class="sd">        Title for the visualization plots. Only relevant if &#39;verbose&#39; is True</span>
+<span class="sd">        (default: &quot;MrMsDTW result&quot;)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -303,7 +308,8 @@
                                  <span class="n">num_rows_step1</span><span class="p">,</span>
                                  <span class="n">num_cols_step1</span><span class="p">,</span>
                                  <span class="n">anchors_step1</span><span class="p">,</span>
-                                 <span class="n">neighboring_anchors</span><span class="p">)</span>
+                                 <span class="n">neighboring_anchors</span><span class="p">,</span>
+                                 <span class="n">plot_title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">visualization_title</span><span class="si">}</span><span class="s2"> - Level </span><span class="si">{</span><span class="n">it</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Level </span><span class="si">{}</span><span class="s1"> computation time: </span><span class="si">{:.2f}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">computation_time_it</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>

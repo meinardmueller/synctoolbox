@@ -73,6 +73,9 @@
   <h1>Source code for synctoolbox.feature.csv_tools</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">synctoolbox.feature.pitch</span> <span class="kn">import</span> <span class="n">__visualize_pitch</span>
+<span class="kn">from</span> <span class="nn">synctoolbox.feature.pitch_onset</span> <span class="kn">import</span> <span class="n">__f_peaks_to_matrix</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 
 <div class="viewcode-block" id="read_csv_to_df"><a class="viewcode-back" href="../../../feature/csv_tools.html#synctoolbox.feature.csv_tools.read_csv_to_df">[docs]</a><span class="k">def</span> <span class="nf">read_csv_to_df</span><span class="p">(</span><span class="n">csv_filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -110,7 +113,9 @@
                          <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">,</span>
                          <span class="n">transpose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                          <span class="n">ignore_velocity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                         <span class="n">ignore_percussion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                         <span class="n">ignore_percussion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                         <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                         <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Pitch features&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; Computes pitch-based features for a dataframe containing symbolic music.</span>
 <span class="sd">    The resulting features have the same format as the output of &#39;audio_to_pitch_features&#39;</span>
 <span class="sd">    for audio.</span>
@@ -140,6 +145,12 @@
 <span class="sd">    ignore_percussion : bool</span>
 <span class="sd">        Ignores percussion. If `True`, no features are generated for percussive events.</span>
 
+<span class="sd">    visualize : bool</span>
+<span class="sd">        Set `True` to activate the visualization of features</span>
+
+<span class="sd">    visualization_title : str</span>
+<span class="sd">        Title for the visualization plot. Only relevant if &#39;visualize&#39; is True</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    f_pitch : np.ndarray</span>
@@ -166,9 +177,11 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The pitch for note </span><span class="si">{</span><span class="n">pitch</span><span class="si">}</span><span class="s1"> at time point </span><span class="si">{</span><span class="n">start_time_ms</span><span class="o">/</span> <span class="mi">1000</span><span class="si">}</span><span class="s1"> sec is not valid.&#39;</span><span class="p">)</span>
 
         <span class="c1"># TODO: ATTENTION TO INDEXING!</span>
-        <span class="k">if</span> <span class="n">instrument</span> <span class="o">==</span> <span class="s1">&#39;percussive&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ignore_percussion</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">cur_win</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_window_involved</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">first_window_involved</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_pitch_features</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">f_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">,</span> <span class="n">cur_win</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">__compute_pitch_energy</span><span class="p">(</span><span class="n">cur_energy_val</span><span class="o">=</span><span class="n">f_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">,</span> <span class="n">cur_win</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="k">if</span> <span class="n">instrument</span> <span class="o">==</span> <span class="s1">&#39;percussive&#39;</span><span class="p">:</span>
+            <span class="c1"># TODO The code for percussive events is not well tested!</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_percussion</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">cur_win</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_window_involved</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">first_window_involved</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_pitch_features</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">f_pitch</span><span class="p">[:,</span> <span class="n">cur_win</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">__compute_pitch_energy</span><span class="p">(</span><span class="n">cur_energy_val</span><span class="o">=</span><span class="n">f_pitch</span><span class="p">[:,</span> <span class="n">cur_win</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
                                                                    <span class="n">cur_win</span><span class="o">=</span><span class="n">cur_win</span><span class="p">,</span>
                                                                    <span class="n">start_time_ms</span><span class="o">=</span><span class="n">start_time_ms</span><span class="p">,</span>
                                                                    <span class="n">end_time_ms</span><span class="o">=</span><span class="n">end_time_ms</span><span class="p">,</span>
@@ -186,6 +199,10 @@
                                                                    <span class="n">stepsize_ms</span><span class="o">=</span><span class="n">stepsize_ms</span><span class="p">,</span>
                                                                    <span class="n">ignore_velocity</span><span class="o">=</span><span class="n">ignore_velocity</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">visualize</span><span class="p">:</span>
+        <span class="n">__visualize_pitch</span><span class="p">(</span><span class="n">f_pitch</span><span class="p">,</span> <span class="n">feature_rate</span><span class="o">=</span><span class="n">feature_rate</span><span class="p">,</span> <span class="n">plot_title</span><span class="o">=</span><span class="n">visualization_title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
     <span class="k">return</span> <span class="n">f_pitch</span></div>
 
 
@@ -194,7 +211,9 @@
                                <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">,</span>
                                <span class="n">transpose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                                <span class="n">ignore_percussion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                               <span class="n">peak_height_scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+                               <span class="n">peak_height_scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">,</span>
+                               <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                               <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Pitch features&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Computes pitch-based onset features for a dataframe containing symbolic music.</span>
 <span class="sd">    The resulting features have the same format as the output of &#39;audio_to_pitch_onset_features&#39;</span>
 <span class="sd">    for audio.</span>
@@ -222,14 +241,20 @@
 <span class="sd">        are in a similar range than the peak features from an audio file</span>
 <span class="sd">        So 1e6 is more or less arbitrary.</span>
 
+<span class="sd">    visualize : bool</span>
+<span class="sd">        Set `True` to activate the visualization of features</span>
+
+<span class="sd">    visualization_title : str</span>
+<span class="sd">        Title for the visualization plot. Only relevant if &#39;visualize&#39; is True</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    f_peaks : dict</span>
 <span class="sd">        A dictionary of onset peaks, see &#39;audio_to_pitch_onset_features&#39; for the exact format</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">num_peaks_in_pitch</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">peak_height_scale_factor_percussion</span> <span class="o">=</span> <span class="n">peak_height_scale_factor</span> <span class="o">*</span> <span class="mi">10</span>
+    <span class="n">num_peaks_in_pitch</span> <span class="o">=</span> <span class="p">{</span><span class="n">pitch</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">pitch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">129</span><span class="p">)}</span>
     <span class="n">f_peaks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">num_percussive_notes</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
         <span class="n">start_time_ms</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
@@ -240,29 +265,28 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">midi_max</span> <span class="o">&gt;=</span> <span class="n">pitch</span> <span class="o">&gt;=</span> <span class="n">midi_min</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The pitch for note </span><span class="si">{</span><span class="n">pitch</span><span class="si">}</span><span class="s1"> at timepoint </span><span class="si">{</span><span class="n">start_time_ms</span><span class="o">/</span> <span class="mi">1000</span><span class="si">}</span><span class="s1"> sec is not valid.&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">instrument</span> <span class="o">==</span> <span class="s1">&#39;percussive&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ignore_percussion</span><span class="p">:</span>
-            <span class="n">num_percussive_notes</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
-            <span class="c1"># TODO</span>
-            <span class="k">pass</span>
+        <span class="k">def</span> <span class="nf">add_peak_for_pitch</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">peak_height_scale_factor</span><span class="p">):</span>
+            <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
+            <span class="k">if</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f_peaks</span><span class="p">:</span>
+                    <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f_peaks</span> <span class="ow">or</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">start_time_ms</span><span class="p">],</span> <span class="p">[</span><span class="n">velocity</span> <span class="o">/</span> <span class="n">scale_factor</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_time_ms</span>
+                <span class="n">f_peaks</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity</span> <span class="o">/</span> <span class="n">scale_factor</span>
+
+        <span class="k">if</span> <span class="n">instrument</span> <span class="o">==</span> <span class="s1">&#39;percussive&#39;</span><span class="p">:</span>
+            <span class="c1"># TODO The code for percussive events is not well tested!</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_percussion</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">129</span><span class="p">):</span>
+                    <span class="n">add_peak_for_pitch</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">peak_height_scale_factor_percussion</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">pitch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">num_peaks_in_pitch</span><span class="p">:</span>
-                <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="k">if</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">pitch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f_peaks</span><span class="p">:</span>
-                    <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                    <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">pitch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f_peaks</span> <span class="ow">or</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">start_time_ms</span><span class="p">],</span> <span class="p">[</span><span class="n">velocity</span> <span class="o">/</span> <span class="n">peak_height_scale_factor</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_time_ms</span>
-                <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity</span> <span class="o">/</span> <span class="n">peak_height_scale_factor</span>
+            <span class="n">add_peak_for_pitch</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">pitch</span> <span class="ow">in</span> <span class="n">f_peaks</span><span class="p">:</span>
         <span class="n">time_vals</span> <span class="o">=</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:][</span><span class="mi">0</span><span class="p">:</span> <span class="n">num_peaks_in_pitch</span><span class="p">[</span><span class="n">pitch</span><span class="p">]]</span>
@@ -272,6 +296,12 @@
         <span class="n">sort_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
         <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:][</span><span class="n">sort_index</span><span class="p">]</span>
         <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">f_peaks</span><span class="p">[</span><span class="n">pitch</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="p">:][</span><span class="n">sort_index</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">visualize</span><span class="p">:</span>
+        <span class="n">highest_time_res</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">/</span> <span class="mi">22050</span>  <span class="c1"># TODO don&#39;t hardcode this, identify appropriate resolution based on df</span>
+        <span class="n">imagedata</span> <span class="o">=</span> <span class="n">__f_peaks_to_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]),</span> <span class="n">f_peaks</span><span class="p">,</span> <span class="n">highest_time_res</span><span class="p">,</span> <span class="n">midi_max</span><span class="p">,</span> <span class="n">midi_min</span><span class="p">)</span>
+        <span class="n">__visualize_pitch</span><span class="p">(</span><span class="n">imagedata</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">midi_min</span><span class="p">,</span> <span class="n">midi_max</span><span class="p">,</span> <span class="n">feature_rate</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">highest_time_res</span><span class="p">,</span> <span class="n">plot_title</span><span class="o">=</span><span class="n">visualization_title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">f_peaks</span></div>
 
@@ -325,20 +355,20 @@
     <span class="n">contribution</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">end_time_ms</span><span class="p">,</span> <span class="n">right_border_cur_win_ms</span><span class="p">)</span> <span class="o">-</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">start_time_ms</span><span class="p">,</span> <span class="n">left_border_cur_win_ms</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">stepsize_ms</span><span class="p">)</span>
 
-    <span class="c1"># Add energy equally distributed to all pitches</span>
-    <span class="c1"># Since we assume the percussive sound to be short,</span>
-    <span class="c1"># we just add energy to the first relevant Window</span>
     <span class="k">if</span> <span class="n">is_percussive</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">cur_energy_val</span> <span class="o">+</span> <span class="p">(</span><span class="n">velocity</span> <span class="o">/</span> <span class="mi">120</span><span class="p">)</span> <span class="o">*</span> <span class="n">contribution</span>
-
-    <span class="c1"># If not percussive,</span>
-    <span class="c1"># add energy for this note to features</span>
-    <span class="c1"># assume constant note energy throughout the whole note</span>
-    <span class="c1">#  this may later be improved to an ADSR model</span>
-    <span class="k">elif</span> <span class="n">ignore_velocity</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="c1"># Add energy equally distributed to all pitches</span>
+        <span class="c1"># Since we assume the percussive sound to be short,</span>
+        <span class="c1"># we just add energy to the first relevant Window</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">cur_energy_val</span> <span class="o">+</span> <span class="p">(</span><span class="n">velocity</span> <span class="o">/</span> <span class="mi">128</span><span class="p">)</span> <span class="o">*</span> <span class="n">contribution</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">cur_energy_val</span> <span class="o">+</span> <span class="n">velocity</span> <span class="o">*</span> <span class="n">contribution</span>
+        <span class="c1"># If not percussive,</span>
+        <span class="c1"># add energy for this note to features</span>
+        <span class="c1"># assume constant note energy throughout the whole note</span>
+        <span class="c1">#  this may later be improved to an ADSR model</span>
+        <span class="k">if</span> <span class="n">ignore_velocity</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">cur_energy_val</span> <span class="o">+</span> <span class="n">velocity</span> <span class="o">*</span> <span class="n">contribution</span>
 
     <span class="k">return</span> <span class="n">res</span>
 
