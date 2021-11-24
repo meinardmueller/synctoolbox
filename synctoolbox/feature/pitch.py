@@ -27,7 +27,8 @@ def audio_to_pitch_features(f_audio: np.ndarray,
                             midi_max: int = 108,
                             tuning_offset: int = 0,
                             verbose: bool = False,
-                            visualization_title: str = "Pitch features") -> np.ndarray:
+                            visualization_title: str = "Pitch features",
+                            visualization_log_gamma: float = 100.0) -> np.ndarray:
     """Computes pitch-based features via an IIR filterbank aggregated as STMSP
     (short-time mean-square power). The signal is decomposed into subbands that
     correspond to MIDI pitches between midi_min and midi_max.
@@ -60,6 +61,9 @@ def audio_to_pitch_features(f_audio: np.ndarray,
 
     visualization_title : str
         Title for the visualization plot. Only relevant if 'verbose' is True
+
+    visualization_log_gamma : float
+        Log compression gamma parameter for visualization. (relevant only if `verbose` is True.
 
     Returns
     -------
@@ -105,7 +109,10 @@ def audio_to_pitch_features(f_audio: np.ndarray,
 
     if verbose:
         print("")
-        __visualize_pitch(f_pitch, feature_rate=feature_rate, plot_title=visualization_title)
+        __visualize_pitch(f_pitch,
+                          feature_rate=feature_rate,
+                          plot_title=visualization_title,
+                          log_comp_gamma=visualization_log_gamma)
         plt.show()
 
     return f_pitch
@@ -122,9 +129,13 @@ def __visualize_pitch(f_pitch: np.ndarray,
                       midi_max: int = 108,
                       feature_rate: float = 0,
                       use_pitch_name_labels: bool = False,
-                      plot_title: str = "Pitch features"):
-
+                      plot_title: str = "Pitch features",
+                      log_comp_gamma: float = 10):
     f_image = f_pitch[midi_min:midi_max + 1, :]
+    if log_comp_gamma != 0:
+        f_image = np.log(1 + log_comp_gamma * f_image)
+
+        plot_title += f' log-compressed with $\gamma={log_comp_gamma}$'
 
     fig, ax, im = plot_matrix(X=f_image, extent=[0, f_pitch.shape[1]/feature_rate, midi_min, midi_max+1],
                               title=plot_title, ylabel='MIDI Pitch', xlabel="Time (seconds)", figsize=(9, 9),
