@@ -1,3 +1,8 @@
+import os.path
+import subprocess
+
+import libfmp.c1
+import music21
 import numpy as np
 import pandas as pd
 from synctoolbox.feature.pitch import __visualize_pitch
@@ -326,3 +331,115 @@ def __get_audio_duration_from_df(df: pd.DataFrame) -> float:
     duration = df['end'].max()
     return duration
 
+
+def music_xml_to_csv_musical_time(xml, csv_filepath: str):
+    """Convert a music xml file to a list of note events, with starts and durations as fractions of measures, and stores
+    it as a csv file in libfmp format.
+
+    Args:
+        xml (str or music21.stream.Score): Either a path to a music xml file or a music21.stream.Score
+        csv_filepath : str
+            Filepath to the .csv file.
+    """
+
+    if isinstance(xml, str):
+        xml_data = music21.converter.parse(xml)
+    elif isinstance(xml, music21.stream.Score):
+        xml_data = xml
+    else:
+        raise RuntimeError('xml must be a path to an xml file or music21.stream.Score')
+
+    # Convert tied notes to single note events
+    xml_data = xml_data.stripTies()
+    # Expand any repeat signs in the score. Unfortunately, for older versions of music21, this method throws errors if there are no repeats in the score, so we do some try-and-catch: https://github.com/cuthbertLab/music21/issues/355
+    try:
+        xml_data_expanded = xml_data.expandRepeats()
+    except music21.repeat.ExpanderException:
+        xml_data_expanded = xml_data
+    xml_data = xml_data_expanded
+
+    score = []
+    # First, get starts and ends of notes in terms of quarters (similar to 'xml_to_list' in libfmp)
+    for part in xml_data.parts:
+        instrument = part.getInstrument().partName  # Other interesting properties may be instrumentName and midiProgram, but often, these are not set correctly
+        for note in part.flat.notes:
+            start = note.offset
+            end = note.offset + note.quarterLength
+            if note.isChord:
+                for chord_note in note.pitches:
+                    pitch = chord_note.ps
+                    volume = note.volume.realized
+                    score.append([start, end, pitch, volume, instrument])
+            else:
+                pitch = note.pitch.ps
+                volume = note.volume.realized
+                score.append([start, end, pitch, volume, instrument])
+
+    # To get the positions of measures in the score in terms of quarters, make sure that...
+    measures_in_parts = [[measure for measure in part.getElementsByClass(music21.stream.Measure)] for part in xml_data.parts]
+    measure_positions_in_quarters = [[measure.offset for measure in part] for part in measures_in_parts]
+    # ...all parts have the same number of measures and...
+    assert all(len(measure_positions_in_quarters[0]) == len(ms) for ms in measure_positions_in_quarters), "Malformed musicxml: Not all parts have the same number of measures. Sometimes this can be fixed by im- and then exporting the file in musescore."
+    # ...that the positions of measures (in terms of quarters) are the same everywhere.
+    assert all(measure_positions_in_quarters[0][m] == measure_positions_in_quarters[i][m] for i in range(len(xml_data.parts)) for m in range(len(measure_positions_in_quarters[0]))), "Malformed musicxml: Not all parts have the same measure positions. Sometimes this can be fixed by im- and then exporting the file in musescore."  # This happens for example for second piece in SWD.
+
+    measure_positions_in_quarters = measure_positions_in_quarters[0]
+    if measures_in_parts[0][0].duration.quarterLength < measures_in_parts[0][0].barDuration.quarterLength:
+        has_pickup_measure = True  # Start counting at 0
+    else:
+        has_pickup_measure = False  # Start counting at 1
+    measure_positions_in_quarters.append(measures_in_parts[0][-1].offset + measures_in_parts[0][-1].quarterLength)  # End of last measure
+    measure_positions_in_quarters = np.array(measure_positions_in_quarters)
+
+    def get_position_in_fraction_of_measures(position_in_quarters, is_end=False):
+        if position_in_quarters == measure_positions_in_quarters[-1]:
+            assert is_end, "Error when converting to measure axis: Found a note start on the last measure position."
+            return len(measure_positions_in_quarters) + 0.999 - (2 if has_pickup_measure else 1)
+        assert measure_positions_in_quarters[0] <= position_in_quarters < measure_positions_in_quarters[-1], "Error when converting to measure axis: Found a note position past the first or last measure position."
+        measure_index = np.where(measure_positions_in_quarters <= position_in_quarters)[0][-1]
+        if has_pickup_measure and measure_index == 0:
+            measure_length_in_quarters = measures_in_parts[0][0].barDuration.quarterLength
+            relative_position_in_measure = (position_in_quarters + measures_in_parts[0][0].barDuration.quarterLength - measures_in_parts[0][0].duration.quarterLength) / measure_length_in_quarters
+        else:
+            measure_length_in_quarters = measure_positions_in_quarters[measure_index + 1] - measure_positions_in_quarters[measure_index]
+            relative_position_in_measure = (position_in_quarters - measure_positions_in_quarters[measure_index]) / measure_length_in_quarters
+        if is_end and relative_position_in_measure == 0.0:
+            measure_index -= 1
+            relative_position_in_measure = 0.999
+        return measure_index + relative_position_in_measure + (0 if has_pickup_measure else 1)
+
+    for i in range(len(score)):
+        start = get_position_in_fraction_of_measures(score[i][0])
+        end = get_position_in_fraction_of_measures(score[i][1], is_end=True)
+        # To stay compatible with libfmp functions, we store this as a list with start and duration,
+        # although many of our annotations are actually stored as start and end...
+        score[i][0] = start
+        score[i][1] = end - start
+
+    score = sorted(score, key=lambda x: (x[0], x[2]))
+    libfmp.c1.list_to_csv(score, csv_filepath)
+
+
+def midi_to_music_xml_musescore(midi_filepath: str, musescore_executable: str = "musescore"):
+    """Convert a midi file to a music xml score using musescore. This only works for score-based midis, not performed
+    midis. Even for score-based midis, errors may occur. The resulting music xml should always be checked manually.
+    For this method to work, musescore must be installed on the system.
+
+    Parameters
+    ----------
+    midi_filepath: Path to the midi file. A corresponding .mxl file of the same name will be created in the same directory.
+    musescore_executable: Path to or name of the musescore executable.
+    """
+    if subprocess.getstatusoutput(musescore_executable)[0] != 0:
+        assert False, f"Could not call musescore via command {musescore_executable}. To use midi_to_music_xml_musescore, make sure musescore is installed."
+
+    musicxml_filepath = midi_filepath[:midi_filepath.rindex(".")] + ".mxl"
+    exitcode, output = subprocess.getstatusoutput(f"{musescore_executable} -o '{musicxml_filepath}' '{midi_filepath}'")
+    if exitcode != 0:
+        assert False, f"Could not convert {midi_filepath} to musicxml. Musescore output: {output}"
+    else:
+        print(f"Successfully converted {midi_filepath} to {musicxml_filepath} using musescore")
+
+
+if __name__ == '__main__':
+    music_xml_to_csv_musical_time("/home/ahnonay/Dev/synctoolbox/RM-C001.mxl", "/home/ahnonay/Dev/synctoolbox/RM-C001.csv")
