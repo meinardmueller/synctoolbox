@@ -25,8 +25,8 @@ def euclidean_distance(f1, f2, l2_meas_max=1.0, l2_meas_min=0.0):
 
 def compute_high_res_cost_matrix(f_chroma1: np.ndarray,
                                  f_chroma2: np.ndarray,
-                                 f_DLNCO1: np.ndarray,
-                                 f_DLNCO2: np.ndarray,
+                                 f_onset1: np.ndarray,
+                                 f_onset2: np.ndarray,
                                  weights: np.ndarray = np.array([1.0, 1.0]),
                                  cos_meas_min: float = 1.0,
                                  cos_meas_max: float = 2.0,
@@ -44,10 +44,10 @@ def compute_high_res_cost_matrix(f_chroma1: np.ndarray,
     f_chroma2 : np.ndarray [shape=(12, M)]
         Chroma feature matrix of the second sequence (assumed to be normalized).
 
-    f_DLNCO1 : np.ndarray [shape=(12, N)]
+    f_onset1 : np.ndarray [shape=(12, N)]
         DLNCO feature matrix of the first sequence
 
-    f_DLNCO2 : np.ndarray [shape=(12, M)]
+    f_onset2 : np.ndarray [shape=(12, M)]
         DLNCO feature matrix of the second sequence
 
     weights : np.ndarray [shape=[2,]]
@@ -72,7 +72,7 @@ def compute_high_res_cost_matrix(f_chroma1: np.ndarray,
         Cost matrix
     """
     cos_dis = cosine_distance(f_chroma1, f_chroma2, cos_meas_min=cos_meas_min, cos_meas_max=cos_meas_max)
-    euc_dis = euclidean_distance(f_DLNCO1, f_DLNCO2, l2_meas_min=l2_meas_min, l2_meas_max=l2_meas_max)
+    euc_dis = euclidean_distance(f_onset1, f_onset2, l2_meas_min=l2_meas_min, l2_meas_max=l2_meas_max)
 
     return weights[0] * cos_dis + weights[1] * euc_dis
 
