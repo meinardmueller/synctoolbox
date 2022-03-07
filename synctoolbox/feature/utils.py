@@ -27,7 +27,7 @@ def smooth_downsample_feature(f_feature: np.ndarray,
 
     Returns
     -------
-    f_feature_stat : np.array
+    f_feature_stat : np.ndarray
         Downsampled & smoothed feature.
 
     new_feature_rate : float
