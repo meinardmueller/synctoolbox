@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from typing import List
 
 from synctoolbox.dtw.anchor import derive_anchors_from_projected_alignment, derive_neighboring_anchors, \
     project_alignment_on_a_new_feature_rate
@@ -13,84 +14,174 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                      f_chroma2: np.ndarray,
                      f_onset1: np.ndarray = None,
                      f_onset2: np.ndarray = None,
-                     input_feature_rate: float = 50,
+                     input_feature_rate: int = 50,
                      step_sizes: np.ndarray = np.array([[1, 0], [0, 1], [1, 1]], np.int32),
                      step_weights: np.ndarray = np.array([1.0, 1.0, 1.0], np.float64),
-                     threshold_rec: int = 10000, win_len_smooth: np.ndarray = np.array([201, 101, 21, 1]),
+                     threshold_rec: int = 10000,
+                     win_len_smooth: np.ndarray = np.array([201, 101, 21, 1]),
                      downsamp_smooth: np.ndarray = np.array([50, 25, 5, 1]),
                      verbose: bool = False,
                      dtw_implementation: str = 'synctoolbox',
                      normalize_chroma: bool = True,
                      chroma_norm_ord: int = 2,
                      chroma_norm_threshold: float = 0.001,
-                     visualization_title: str = "MrMsDTW result"):
+                     visualization_title: str = "MrMsDTW result",
+                     constant_anchors: List = None):
     """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
-    MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
-    regions defined by the alignment found on the previous, coarser level.
-    If onset features are provided, these are used on the finest level in addition to chroma
-    to provide higher synchronization accuracy.
+        MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
+        regions defined by the alignment found on the previous, coarser level.
+        If onset features are provided, these are used on the finest level in addition to chroma
+        to provide higher synchronization accuracy.
 
-    Parameters
-    ----------
-    f_chroma1 : np.ndarray [shape=(12, N)]
-        Chroma feature matrix of the first sequence
+        Parameters
+        ----------
+        f_chroma1 : np.ndarray [shape=(12, N)]
+            Chroma feature matrix of the first sequence
 
-    f_chroma2 : np.ndarray [shape=(12, M)]
-        Chroma feature matrix of the second sequence
+        f_chroma2 : np.ndarray [shape=(12, M)]
+            Chroma feature matrix of the second sequence
 
-    f_onset1 : np.ndarray [shape=(L, N)]
-        Onset feature matrix of the first sequence (optional, default: None)
+        f_onset1 : np.ndarray [shape=(L, N)]
+            Onset feature matrix of the first sequence (optional, default: None)
 
-    f_onset2 : np.ndarray [shape=(L, M)]
-        Onset feature matrix of the second sequence (optional, default: None)
+        f_onset2 : np.ndarray [shape=(L, M)]
+            Onset feature matrix of the second sequence (optional, default: None)
 
-    input_feature_rate: float
-        Input feature rate of the chroma features (default: 50)
+        input_feature_rate: int
+            Input feature rate of the chroma features (default: 50)
 
-    step_sizes: np.ndarray
-        DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))
+        step_sizes: np.ndarray
+            DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))
 
-    step_weights: np.ndarray
-        DTW step weights (np.array([1.0, 1.0, 1.0]))
+        step_weights: np.ndarray
+            DTW step weights (np.array([1.0, 1.0, 1.0]))
 
-    threshold_rec: int
-        Defines the maximum area that is spanned by the rectangle of two
-        consecutive elements in the alignment (default: 10000)
+        threshold_rec: int
+            Defines the maximum area that is spanned by the rectangle of two
+            consecutive elements in the alignment (default: 10000)
 
-    win_len_smooth : np.ndarray
-        Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))
+        win_len_smooth : np.ndarray
+            Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))
 
-    downsamp_smooth : np.ndarray
-        Downsampling factors (default: np.array([50, 25, 5, 1]))
+        downsamp_smooth : np.ndarray
+            Downsampling factors (default: np.array([50, 25, 5, 1]))
 
-    verbose : bool
-        Set `True` for visualization (default: False)
+        verbose : bool
+            Set `True` for visualization (default: False)
 
-    dtw_implementation : str
-        DTW implementation, librosa or synctoolbox (default: synctoolbox)
+        dtw_implementation : str
+            DTW implementation, librosa or synctoolbox (default: synctoolbox)
 
-    normalize_chroma : bool
-        Set `True` to normalize input chroma features after each downsampling
-        and smoothing operation.
+        normalize_chroma : bool
+            Set `True` to normalize input chroma features after each downsampling
+            and smoothing operation.
 
-    chroma_norm_ord: int
-        Order of chroma normalization, relevant if ``normalize_chroma`` is True.
-        (default: 2)
+        chroma_norm_ord: int
+            Order of chroma normalization, relevant if ``normalize_chroma`` is True.
+            (default: 2)
 
-    chroma_norm_threshold: float
-        If the norm falls below threshold for a feature vector, then the
-        normalized feature vector is set to be the unit vector. Relevant, if
-        ``normalize_chroma`` is True (default: 0.001)
+        chroma_norm_threshold: float
+            If the norm falls below threshold for a feature vector, then the
+            normalized feature vector is set to be the unit vector. Relevant, if
+            ``normalize_chroma`` is True (default: 0.001)
 
-    visualization_title : str
-        Title for the visualization plots. Only relevant if 'verbose' is True
-        (default: "MrMsDTW result")
+        visualization_title : str
+            Title for the visualization plots. Only relevant if 'verbose' is True
+            (default: "MrMsDTW result")
 
-    Returns
-    -------
-    alignment : np.ndarray [shape=(2, T)]
-        Resulting warping path
+        constant_anchors : list
+            List of anchor pairs, given in seconds. NOTE: Not indices! (default: None)
+
+        Returns
+        -------
+        alignment : np.ndarray [shape=(2, T)]
+            Resulting warping path
     """
+    if constant_anchors is None:
+        wp = __sync_via_mrmsdtw(f_chroma1=f_chroma1,
+                                f_chroma2=f_chroma2,
+                                f_onset1=f_onset1,
+                                f_onset2=f_onset2,
+                                input_feature_rate=input_feature_rate,
+                                step_sizes=step_sizes,
+                                step_weights=step_weights,
+                                threshold_rec=threshold_rec,
+                                win_len_smooth=win_len_smooth,
+                                downsamp_smooth=downsamp_smooth,
+                                verbose=verbose,
+                                dtw_implementation=dtw_implementation,
+                                normalize_chroma=normalize_chroma,
+                                chroma_norm_ord=chroma_norm_ord,
+                                chroma_norm_threshold=chroma_norm_threshold,
+                                visualization_title=visualization_title)
+    else:
+        __check_constant_anchors(constant_anchors=constant_anchors,
+                                 f_len1=f_chroma1.shape[1],
+                                 f_len2=f_chroma2.shape[1],
+                                 feature_rate=input_feature_rate)
+        anchor_indices_1 = [0] + \
+                           [int(constant_anchor[0] * input_feature_rate) for constant_anchor in constant_anchors] + \
+                           [f_chroma1.shape[1]]
+
+        anchor_indices_2 = [0] + \
+                           [int(constant_anchor[1] * input_feature_rate) for constant_anchor in constant_anchors] + \
+                           [f_chroma2.shape[1]]
+        wp = None
+        for idx in range(len(constant_anchors) + 1):
+            wp_cur = __sync_via_mrmsdtw(f_chroma1=f_chroma1[:, anchor_indices_1[idx]: anchor_indices_1[idx+1]],
+                                        f_chroma2=f_chroma2[:, anchor_indices_2[idx]: anchor_indices_2[idx+1]],
+                                        f_onset1=f_onset1[:, anchor_indices_1[idx]: anchor_indices_1[idx+1]],
+                                        f_onset2=f_onset2[:, anchor_indices_2[idx]: anchor_indices_2[idx+1]],
+                                        input_feature_rate=input_feature_rate,
+                                        step_sizes=step_sizes,
+                                        step_weights=step_weights,
+                                        threshold_rec=threshold_rec,
+                                        win_len_smooth=win_len_smooth,
+                                        downsamp_smooth=downsamp_smooth,
+                                        verbose=False,
+                                        dtw_implementation=dtw_implementation,
+                                        normalize_chroma=normalize_chroma,
+                                        chroma_norm_ord=chroma_norm_ord,
+                                        chroma_norm_threshold=chroma_norm_threshold)
+
+            if wp is None:
+                wp = np.array(wp_cur, copy=True)
+
+            # Concatenate warping paths
+            else:
+                wp = np.concatenate([wp, wp_cur[:, 1:] + wp[:, -1].reshape(2, 1) + 1], axis=1)
+
+    return wp
+
+
+def __check_constant_anchors(constant_anchors: List,
+                             f_len1: int,
+                             f_len2: int,
+                             feature_rate: int):
+    for constant_anchor in constant_anchors:
+        if constant_anchor[0] < 0 or constant_anchor[0] > f_len1 / feature_rate or \
+                constant_anchor[1] < 0 or constant_anchor[1] > f_len2 / feature_rate:
+            raise ValueError('Anchor points must be given in seconds between 0 and the length of the corresponding '
+                             'audio.')
+
+
+def __sync_via_mrmsdtw(f_chroma1: np.ndarray,
+                       f_chroma2: np.ndarray,
+                       f_onset1: np.ndarray = None,
+                       f_onset2: np.ndarray = None,
+                       input_feature_rate: int = 50,
+                       step_sizes: np.ndarray = np.array([[1, 0], [0, 1], [1, 1]], np.int32),
+                       step_weights: np.ndarray = np.array([1.0, 1.0, 1.0], np.float64),
+                       threshold_rec: int = 10000,
+                       win_len_smooth: np.ndarray = np.array([201, 101, 21, 1]),
+                       downsamp_smooth: np.ndarray = np.array([50, 25, 5, 1]),
+                       verbose: bool = False,
+                       dtw_implementation: str = 'synctoolbox',
+                       normalize_chroma: bool = True,
+                       chroma_norm_ord: int = 2,
+                       chroma_norm_threshold: float = 0.001,
+                       visualization_title: str = "MrMsDTW result"):
+
     # If onset features are given as input, high resolution MrMsDTW is activated.
     high_res = False
     if f_onset1 is not None and f_onset2 is not None:
@@ -107,8 +198,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
     cost_matrix_size_old = tuple()
     feature_rate_old = input_feature_rate / downsamp_smooth[0]
     alignment = None
-
     total_computation_time = 0.0
+
     for it in range(num_iterations):
         tic1 = time.perf_counter()
 
