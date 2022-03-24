@@ -439,7 +439,3 @@ def midi_to_music_xml_musescore(midi_filepath: str, musescore_executable: str = 
         assert False, f"Could not convert {midi_filepath} to musicxml. Musescore output: {output}"
     else:
         print(f"Successfully converted {midi_filepath} to {musicxml_filepath} using musescore")
-
-
-if __name__ == '__main__':
-    music_xml_to_csv_musical_time("/home/ahnonay/Dev/synctoolbox/RM-C001.mxl", "/home/ahnonay/Dev/synctoolbox/RM-C001.csv")
