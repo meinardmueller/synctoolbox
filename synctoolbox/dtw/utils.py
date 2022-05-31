@@ -84,7 +84,8 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
                                           f_chroma2: np.ndarray,
                                           anchors: np.ndarray,
                                           f_onset1: np.ndarray = None,
-                                          f_onset2: np.ndarray = None) -> list:
+                                          f_onset2: np.ndarray = None,
+                                          alpha: float = 0.5) -> list:
     """Computes cost matrices for the given features between subsequent
     pairs of anchors points.
 
@@ -123,7 +124,8 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
             cost_matrices.append(compute_high_res_cost_matrix(f_chroma1[:, a1[0]: a2[0] + 1],
                                                               f_chroma2[:, a1[1]: a2[1] + 1],
                                                               f_onset1[:, a1[0]: a2[0] + 1],
-                                                              f_onset2[:, a1[1]: a2[1] + 1]))
+                                                              f_onset2[:, a1[1]: a2[1] + 1],
+                                                              weights=np.array([alpha, 1-alpha])))
         else:
             cost_matrices.append(cosine_distance(f_chroma1[:, a1[0]: a2[0] + 1],
                                                  f_chroma2[:, a1[1]: a2[1] + 1]))

@@ -182,7 +182,8 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                      normalize_chroma: bool = True,
                      chroma_norm_ord: int = 2,
                      chroma_norm_threshold: float = 0.001,
-                     visualization_title: str = "MrMsDTW result") -> np.ndarray:
+                     visualization_title: str = "MrMsDTW result",
+                     alpha=0.5) -> np.ndarray:
     """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
         MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
         regions defined by the alignment found on the previous, coarser level.
@@ -311,12 +312,14 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                                                                         f_chroma2=f_chroma2_cur,
                                                                         f_onset1=f_onset1,
                                                                         f_onset2=f_onset2,
-                                                                        anchors=anchors)
+                                                                        anchors=anchors,
+                                                                        alpha=alpha)
 
         else:
             cost_matrices_step1 = compute_cost_matrices_between_anchors(f_chroma1=f_chroma1_cur,
                                                                         f_chroma2=f_chroma2_cur,
-                                                                        anchors=anchors)
+                                                                        anchors=anchors,
+                                                                        alpha=alpha)
 
         wp_list = compute_warping_paths_from_cost_matrices(cost_matrices_step1,
                                                            step_sizes=step_sizes,
@@ -359,12 +362,14 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                                                                         f_chroma2=f_chroma2_cur,
                                                                         f_onset1=f_onset1,
                                                                         f_onset2=f_onset2,
-                                                                        anchors=neighboring_anchors)
+                                                                        anchors=neighboring_anchors,
+                                                                        alpha=alpha)
 
         else:
             cost_matrices_step2 = compute_cost_matrices_between_anchors(f_chroma1=f_chroma1_cur,
                                                                         f_chroma2=f_chroma2_cur,
-                                                                        anchors=neighboring_anchors)
+                                                                        anchors=neighboring_anchors,
+                                                                        alpha=alpha)
 
         wp_list_refine = compute_warping_paths_from_cost_matrices(cost_matrices=cost_matrices_step2,
                                                                   step_sizes=step_sizes,
