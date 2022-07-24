@@ -267,6 +267,11 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
     for it in range(num_iterations):
         tic1 = time.perf_counter()
 
+        # If the downsampling parameter is smaller than the length of the features, continue with the finer level
+        if downsamp_smooth[it] > f_chroma1.shape[1] or downsamp_smooth[it] > f_chroma2.shape[1]:
+            it += 1
+            continue
+
         # Smooth and downsample given raw features
         f_chroma1_cur, _ = smooth_downsample_feature(f_chroma1,
                                                      input_feature_rate=input_feature_rate,
