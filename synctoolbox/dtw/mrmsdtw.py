@@ -270,7 +270,6 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
         # TODO: Check the functionality
         # If the downsampling parameter is smaller than the length of the features, continue with the finer level
         if downsamp_smooth[it] > f_chroma1.shape[1] or downsamp_smooth[it] > f_chroma2.shape[1]:
-            it += 1
             continue
 
         # Smooth and downsample given raw features
