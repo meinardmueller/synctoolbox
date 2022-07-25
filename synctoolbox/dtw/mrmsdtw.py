@@ -1,3 +1,4 @@
+from numba import jit
 import numpy as np
 import time
 from typing import List
@@ -264,13 +265,11 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
     alignment = None
     total_computation_time = 0.0
 
-    for it in range(num_iterations):
-        tic1 = time.perf_counter()
+    # If the area is less than the threshold_rec, don't apply the multiscale DTW.
+    it = (num_iterations - 1) if __compute_area(f_chroma1, f_chroma2) < threshold_rec else 0
 
-        # TODO: Check the functionality
-        # If the downsampling parameter is smaller than the length of the features, continue with the finer level
-        if downsamp_smooth[it] > f_chroma1.shape[1] or downsamp_smooth[it] > f_chroma2.shape[1]:
-            continue
+    while it < num_iterations:
+        tic1 = time.perf_counter()
 
         # Smooth and downsample given raw features
         f_chroma1_cur, _ = smooth_downsample_feature(f_chroma1,
@@ -403,10 +402,17 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
                                  plot_title=f"{visualization_title} - Level {it + 1}")
             print('Level {} computation time: {:.2f} seconds'.format(it, computation_time_it))
 
+        it += 1
+
     if verbose:
         print('Computation time of MrMsDTW: {:.2f} seconds'.format(total_computation_time))
 
     return alignment
+
+
+@jit(nopython=True)
+def __compute_area(f1, f2):
+    return f1.shape[1] * f2.shape[1]
 
 
 def __refine_wp(wp: np.ndarray,
