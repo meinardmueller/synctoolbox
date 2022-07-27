@@ -27,7 +27,8 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
                                   chroma_norm_ord: int = 2,
                                   chroma_norm_threshold: float = 0.001,
                                   visualization_title: str = "MrMsDTW result",
-                                  constant_intervals: List[Tuple[Tuple, Tuple, bool]] = None) -> np.ndarray:
+                                  anchor_pairs: List[Tuple] = None,
+                                  linear_inp_idx: List[int] = []) -> np.ndarray:
     """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
         MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
         regions defined by the alignment found on the previous, coarser level.
@@ -90,24 +91,29 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
             Title for the visualization plots. Only relevant if 'verbose' is True
             (default: "MrMsDTW result")
 
-        constant_intervals: List[Tuple[Tuple, Tuple, bool]]
-            Constant intervals in the following format
+        anchor_pairs: List[Tuple]
+            Anchor pairs given in seconds. Note that
+            * (0, 0) and (<audio-len1>, <audio-len2>) are not allowed.
+            * Anchors must be monotonously increasing.
 
-            e.g., [((0,  x1), (0, y1), False),
-                   ((x1, x2), (y1, y2), True),
-                   ((x2, -1), (y2, -1), False)]
+        linear_inp_idx: List[int]
+            List of the indices of intervals created by anchor pairs, for which
+            MrMsDTW shouldn't be run, e.g., if the interval only involves silence.
 
-            * The boolean value determines whether MrMsDTW should be applied in the interval.
-                - If the interval is only silence, it usually does not make sense to synchronize that interval.
-            * The starting anchor point of an interval must be the ending anchor point of the previous interval.
-            * The last interval can end with -1, meaning that the interval ends at the end of the feature sequence.
+            0        ap1        ap2        ap3
+            |         |          |          |
+            |  idx0   |   idx1   |  idx2    |  idx3 OR idx-1
+            |         |          |          |
+
+            Note that index -1 corresponds to the last interval, which begins with
+            the last anchor pair until the end of the audio files.
 
         Returns
         -------
         wp : np.ndarray [shape=(2, T)]
             Resulting warping path
     """
-    if constant_intervals is None:
+    if anchor_pairs is None:
         wp = sync_via_mrmsdtw(f_chroma1=f_chroma1,
                               f_chroma2=f_chroma2,
                               f_onset1=f_onset1,
@@ -129,35 +135,45 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
         #                       ((x1, x2), (y1, y2), True),
         #                       ((x2, -1), (y2, -1), False)]
         wp = None
-        __check_constant_intervals(constant_intervals, f_chroma1.shape[1], f_chroma2.shape[1], input_feature_rate)
 
         if verbose:
-            print('Predefined anchor points are detected!')
+            print('Anchor points are given!')
 
-        for constant_interval in constant_intervals:
-            (f1_start, f1_end), (f2_start, f2_end), run_algorithm = constant_interval
+        __check_anchor_pairs(anchor_pairs, f_chroma1.shape[1], f_chroma2.shape[1], input_feature_rate)
+
+        # Add ending as the anchor point
+        anchor_pairs.append((f_chroma1.shape[1] * input_feature_rate, f_chroma2.shape[1]*input_feature_rate))
+
+        prev_a1 = 0
+        prev_a2 = 0
+
+        for idx, anchor_pair in enumerate(anchor_pairs):
+            cur_a1, cur_a2 = anchor_pair
 
             # Split the features
             f_chroma1_split, f_onset1_split, f_chroma2_split, f_onset2_split = __split_features(f_chroma1,
                                                                                                 f_onset1,
                                                                                                 f_chroma2,
                                                                                                 f_onset2,
-                                                                                                constant_interval,
+                                                                                                cur_a1,
+                                                                                                cur_a2,
+                                                                                                prev_a1,
+                                                                                                prev_a2,
                                                                                                 input_feature_rate)
 
-            if not run_algorithm:
+            if idx in linear_inp_idx or idx == len(anchor_pairs) - 1 and -1 in linear_inp_idx:
                 # Generate a diagonal warping path, if the algorithm is not supposed to executed.
                 # A typical scenario is the silence breaks which are enclosed by two anchor points.
                 if verbose:
                     print('A diagonal warping path is generated for the interval \n\t Feature sequence 1: %.2f - %.2f'
-                          '\n\t Feature sequence 2: %.2f - %.2f\n' % (f1_start, f1_end, f2_start, f2_end))
+                          '\n\t Feature sequence 2: %.2f - %.2f\n' % (prev_a1, cur_a1, prev_a2, cur_a2))
                 wp_cur = __diagonal_warping_path(f_chroma1_split, f_chroma2_split)
                 wp_cur *= input_feature_rate / 1000
 
             else:
                 if verbose:
                     print('MrMsDTW is applied for the interval \n\t Feature sequence 1: %.2f - %.2f'
-                          '\n\t Feature sequence 2: %.2f - %.2f\n' % (f1_start, f1_end, f2_start, f2_end))
+                          '\n\t Feature sequence 2: %.2f - %.2f\n' % (prev_a1, cur_a1, prev_a2, cur_a2))
 
                 wp_cur = sync_via_mrmsdtw(f_chroma1=f_chroma1_split,
                                           f_chroma2=f_chroma2_split,
@@ -180,7 +196,11 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
 
             # Concatenate warping paths
             else:
-                wp = np.concatenate([wp, wp_cur[:, 1:] + wp[:, -1].reshape(2, 1) + 1], axis=1)
+                wp = np.concatenate([wp, wp_cur + wp[:, -1].reshape(2, 1) + input_feature_rate / 1000], axis=1)
+
+            prev_a1 = cur_a1
+            prev_a2 = cur_a2
+
     return wp
 
 
@@ -472,34 +492,23 @@ def __split_features(f_chroma1: np.ndarray,
                      f_onset1: np.ndarray,
                      f_chroma2: np.ndarray,
                      f_onset2: np.ndarray,
-                     constant_interval: Tuple[Tuple, Tuple, bool],
+                     cur_a1: float,
+                     cur_a2: float,
+                     prev_a1: float,
+                     prev_a2: float,
                      feature_rate: int) -> Tuple[np.ndarray, Optional[np.ndarray], np.ndarray, Optional[np.ndarray]]:
-    (f1_start, f1_end), (f2_start, f2_end), run_algorithm = constant_interval
 
     # Split the features
-    if f1_end != -1:
-        f_chroma1_split = f_chroma1[:, int(f1_start * feature_rate):int(f1_end * feature_rate)]
-        if f_onset1 is not None:
-            f_onset1_split = f_onset1[:, int(f1_start * feature_rate):int(f1_end * feature_rate)]
+    f_chroma1_split = f_chroma1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
+    if f_onset1 is not None:
+        f_onset1_split = f_onset1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
     else:
-        f_chroma1_split = f_chroma1[:, int(f1_start * feature_rate):]
-        if f_onset1 is not None:
-            f_onset1_split = f_onset1[:, int(f1_start * feature_rate):]
-
-    if f2_end != -1:
-        f_chroma2_split = f_chroma2[:, int(f2_start * feature_rate):int(f2_end * feature_rate)]
-        if f_onset2 is not None:
-            f_onset2_split = f_onset2[:, int(f2_start * feature_rate):int(f2_end * feature_rate)]
-
-    else:
-        f_chroma2_split = f_chroma2[:, int(f2_start * feature_rate):]
-        if f_onset2 is not None:
-            f_onset2_split = f_onset2[:, int(f2_start * feature_rate):]
-
-    if f_onset1 is None:
         f_onset1_split = None
 
-    if f_onset2 is None:
+    f_chroma2_split = f_chroma2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
+    if f_onset2 is not None:
+        f_onset2_split = f_onset2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
+    else:
         f_onset2_split = None
 
     return f_chroma1_split, f_onset1_split, f_chroma2_split, f_onset2_split
@@ -522,19 +531,16 @@ def __refine_wp(wp: np.ndarray,
     return wp_res
 
 
-def __check_constant_intervals(constant_intervals: List,
-                               f_len1: int,
-                               f_len2: int,
-                               feature_rate: int):
-    """Ensures that the predefined anchors satisfy the conditions
+def __check_anchor_pairs(anchor_pairs: List,
+                         f_len1: int,
+                         f_len2: int,
+                         feature_rate: int):
+    """Ensures that the anchors satisfy the conditions
 
     Parameters
     ----------
-    constant_intervals: List[List[Tuple, Tuple, bool]]
-        Constant intervals in the following format
-        e.g., [((0,  x1), (0, y1), False),
-               ((x1, x2), (y1, y2), True),
-               ((x2, -1), (y2, -1), False)]
+    anchor_pairs: List[Tuple]
+        List of anchor pairs
 
     f_len1: int
         Length of the first feature sequence
@@ -545,27 +551,25 @@ def __check_constant_intervals(constant_intervals: List,
     feature_rate: int
         Input feature rate of the features
     """
+    prev_a1 = 0
+    prev_a2 = 0
+    for anchor_pair in anchor_pairs:
+        a1, a2 = anchor_pair
 
-    prev_end_1 = None
-    prev_end_2 = None
-
-    for constant_interval in constant_intervals:
-        (f1_start, f1_end), (f2_start, f2_end), run_algorithm = constant_interval
-        if f1_start < 0 or f2_start < 0:
+        if a1 <= 0 or a2 <= 0:
             raise ValueError('Starting point must be a positive number!')
 
-        if (not f1_end == -1 and f1_end <= f1_start) or (not f2_end == -1 and f2_end <= f2_start):
-            raise ValueError('Ending point of an interval must be greater than the starting point of an interval!')
+        if a1 > f_len1 / feature_rate or a2 > f_len2 / feature_rate:
+            raise ValueError('Anchor points cannot be greater than the length of the input audio files!')
 
-        if f1_start > f_len1 / feature_rate or f1_end > f_len1 / feature_rate or \
-                f2_start > f_len2 / feature_rate or f2_end > f_len2 / feature_rate:
-            raise ValueError('Anchor points must be given in seconds between 0 and the length of the corresponding '
-                             'audio.')
+        if a1 == f_len1 and a2 == f_len2:
+            raise ValueError('Both anchor points cannot be equal to the length of the audio files.')
 
-        if prev_end_1 is not None and prev_end_2 is not None:
-            if f1_start != prev_end_1 and f2_start != prev_end_2:
-                raise ValueError('The starting point of an interval must be the equal '
-                                 'to the ending point of the previous interval!')
+        if a1 == prev_a1 and a2 == prev_a2:
+            raise ValueError('Duplicate anchor pairs are not allowed!')
 
-        prev_end_1 = f1_end
-        prev_end_2 = f2_end
+        if a1 < prev_a1 or a2 < prev_a2:
+            raise ValueError('Anchor points must be monotonously increasing.')
+
+        prev_a1 = a1
+        prev_a2 = a2
