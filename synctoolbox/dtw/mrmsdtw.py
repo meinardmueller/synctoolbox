@@ -111,7 +111,7 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
         Returns
         -------
         wp : np.ndarray [shape=(2, T)]
-            Resulting warping path
+            Resulting warping path which indicates synchronized indices.
     """
     if anchor_pairs is None:
         wp = sync_via_mrmsdtw(f_chroma1=f_chroma1,
@@ -196,7 +196,7 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
 
             # Concatenate warping paths
             else:
-                wp = np.concatenate([wp, wp_cur + wp[:, -1].reshape(2, 1) + input_feature_rate / 1000], axis=1)
+                wp = np.concatenate([wp, wp_cur + wp[:, -1].reshape(2, 1) + 1], axis=1)
 
             prev_a1 = cur_a1
             prev_a2 = cur_a2
@@ -282,6 +282,11 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
         visualization_title : str
             Title for the visualization plots. Only relevant if 'verbose' is True
             (default: "MrMsDTW result")
+
+        Returns
+        -------
+        alignment: np.ndarray [shape=(2, T)]
+            Resulting warping path which indicates synchronized indices.
     """
     # If onset features are given as input, high resolution MrMsDTW is activated.
     high_res = False
