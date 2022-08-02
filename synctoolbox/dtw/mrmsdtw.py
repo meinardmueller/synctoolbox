@@ -467,11 +467,13 @@ def __diagonal_warping_path(f1: np.ndarray,
     -------
     np.ndarray: Diagonal warping path [shape=(2, T)]
     """
-    max_size = np.maximum(f1.size, f2.size)
-    if max_size == f1.size:
-        return np.array([np.linspace(0, max_size-1, max_size), np.round(np.linspace(0, f2.size-1, max_size))])
+    max_size = np.maximum(f1.shape[1], f2.shape[1])
+    min_size = np.minimum(f1.shape[1], f2.shape[1])
+
+    if max_size == f1.shape[1]:
+        return np.array([np.round(np.linspace(0, max_size - 1, min_size)), np.linspace(0, min_size - 1, min_size)])
     else:
-        return np.array([np.round(np.linspace(0, f1.size, max_size)), np.linspace(0, max_size-1, max_size)])
+        return np.array([np.linspace(0, min_size-1, min_size), np.round(np.linspace(0, max_size - 1, min_size))])
 
 
 @jit(nopython=True)
