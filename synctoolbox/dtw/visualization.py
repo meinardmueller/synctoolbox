@@ -6,7 +6,7 @@ import numpy as np
 from typing import Tuple, List
 
 
-def sync_visualize_step1(cost_matrices: list,
+def sync_visualize_step1(cost_matrices: List,
                          num_rows: int,
                          num_cols: int,
                          anchors: np.ndarray,
@@ -76,7 +76,7 @@ def sync_visualize_step2(ax: plt.Axes,
     plt.show()
 
 
-def __size_dtw_matrices(dtw_matrices: list) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+def __size_dtw_matrices(dtw_matrices: List) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """Gives information about the dimensionality of a DTW matrix
     given in form of a list matrix
 
@@ -128,7 +128,6 @@ def __visualize_cost_matrices(ax: plt.Axes,
     ax : axes
          The Axes instance to plot on
 
-        The Axes instance to plot on
     cost_matrices : list
         List of DTW cost matrices.
 
@@ -137,6 +136,12 @@ def __visualize_cost_matrices(ax: plt.Axes,
 
     offset_y : float
         Offset on the y axis.
+
+    Returns
+    -------
+    ax: axes
+        The Axes instance to plot on
+
     """
     x_ax, y_ax = __size_dtw_matrices(dtw_matrices=cost_matrices)
 

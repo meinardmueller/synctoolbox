@@ -7,8 +7,7 @@ def spectral_flux(f_audio: np.ndarray,
                   Fs: int = 22050,
                   feature_rate: int = 50,
                   gamma: float = 10,
-                  M_sec: float = 0.1,
-                  filter_coeff: np.ndarray = np.sqrt(1 / np.arange(1, 11))) -> np.ndarray:
+                  M_sec: float = 0.1) -> np.ndarray:
     """Generates the spectral-based novelty curve given an audio array.
 
     This function is based on the FMP notebook on "Spectral-Based Novelty":
@@ -66,7 +65,11 @@ def spectral_flux(f_audio: np.ndarray,
     nov_norm = nov - local_average
     nov_norm[nov_norm < 0] = 0
     nov_norm = nov_norm / max(nov_norm)
+    return nov_norm
 
+
+def add_decay(nov_norm: np.ndarray,
+              filter_coeff: np.ndarray = np.sqrt(1 / np.arange(1, 11))):
     # Add a temporal decay to the novelty curve.
     v_shift = np.array(nov_norm, copy=True)
     v_help = np.zeros((nov_norm.shape[0], 10))

@@ -10,4 +10,4 @@ dependencies:
   - jupyter=1.0.*  
 
   - pip:
-    - synctoolbox==1.1.*
+    - synctoolbox==1.2.*
