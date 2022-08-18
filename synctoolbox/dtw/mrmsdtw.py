@@ -28,7 +28,8 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
                                   chroma_norm_threshold: float = 0.001,
                                   visualization_title: str = "MrMsDTW result",
                                   anchor_pairs: List[Tuple] = None,
-                                  linear_inp_idx: List[int] = []) -> np.ndarray:
+                                  linear_inp_idx: List[int] = [],
+                                  alpha=0.5) -> np.ndarray:
     """Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.
         MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint
         regions defined by the alignment found on the previous, coarser level.
@@ -108,6 +109,10 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
             Note that index -1 corresponds to the last interval, which begins with
             the last anchor pair until the end of the audio files.
 
+        alpha: float
+            Coefficient for the Chroma cost matrix in the finest scale of the MrMsDTW algorithm.
+            C = alpha * C_Chroma + (1 - alpha) * C_act  (default: 0.5)
+
         Returns
         -------
         wp : np.ndarray [shape=(2, T)]
@@ -129,7 +134,8 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
                               normalize_chroma=normalize_chroma,
                               chroma_norm_ord=chroma_norm_ord,
                               chroma_norm_threshold=chroma_norm_threshold,
-                              visualization_title=visualization_title)
+                              visualization_title=visualization_title,
+                              alpha=alpha)
     else:
         # constant_intervals = [((0,  x1), (0, y1), False),
         #                       ((x1, x2), (y1, y2), True),
@@ -189,7 +195,8 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
                                           dtw_implementation=dtw_implementation,
                                           normalize_chroma=normalize_chroma,
                                           chroma_norm_ord=chroma_norm_ord,
-                                          chroma_norm_threshold=chroma_norm_threshold)
+                                          chroma_norm_threshold=chroma_norm_threshold,
+                                          alpha=alpha)
 
             if wp is None:
                 wp = np.array(wp_cur, copy=True)
@@ -282,6 +289,10 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
         visualization_title : str
             Title for the visualization plots. Only relevant if 'verbose' is True
             (default: "MrMsDTW result")
+
+        alpha: float
+            Coefficient for the Chroma cost matrix in the finest scale of the MrMsDTW algorithm.
+            C = alpha * C_Chroma + (1 - alpha) * C_act  (default: 0.5)
 
         Returns
         -------
