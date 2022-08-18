@@ -470,8 +470,12 @@ def __diagonal_warping_path(f1: np.ndarray,
     max_size = np.maximum(f1.shape[1], f2.shape[1])
     min_size = np.minimum(f1.shape[1], f2.shape[1])
 
-    if max_size == f1.shape[1]:
+    if min_size == 1:
+        return np.array([max_size - 1, 0]).reshape(-1, 1)
+
+    elif max_size == f1.shape[1]:
         return np.array([np.round(np.linspace(0, max_size - 1, min_size)), np.linspace(0, min_size - 1, min_size)])
+
     else:
         return np.array([np.linspace(0, min_size-1, min_size), np.round(np.linspace(0, max_size - 1, min_size))])
 
