@@ -174,7 +174,6 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
                     print('A diagonal warping path is generated for the interval \n\t Feature sequence 1: %.2f - %.2f'
                           '\n\t Feature sequence 2: %.2f - %.2f\n' % (prev_a1, cur_a1, prev_a2, cur_a2))
                 wp_cur = __diagonal_warping_path(f_chroma1_split, f_chroma2_split)
-                wp_cur *= input_feature_rate / 1000
 
             else:
                 if verbose:
