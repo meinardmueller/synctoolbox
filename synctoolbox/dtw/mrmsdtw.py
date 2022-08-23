@@ -524,18 +524,34 @@ def __split_features(f_chroma1: np.ndarray,
                      prev_a2: float,
                      feature_rate: int) -> Tuple[np.ndarray, Optional[np.ndarray], np.ndarray, Optional[np.ndarray]]:
 
-    # Split the features
-    f_chroma1_split = f_chroma1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
-    if f_onset1 is not None:
-        f_onset1_split = f_onset1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
-    else:
-        f_onset1_split = None
+    if cur_a1 == -1:
+        f_chroma1_split = f_chroma1[:, int(prev_a1 * feature_rate):]
+        if f_onset1 is not None:
+            f_onset1_split = f_onset1[:, int(prev_a1 * feature_rate):]
+        else:
+            f_onset1_split = None
 
-    f_chroma2_split = f_chroma2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
-    if f_onset2 is not None:
-        f_onset2_split = f_onset2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
     else:
-        f_onset2_split = None
+        # Split the features
+        f_chroma1_split = f_chroma1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
+        if f_onset1 is not None:
+            f_onset1_split = f_onset1[:, int(prev_a1 * feature_rate):int(cur_a1 * feature_rate)]
+        else:
+            f_onset1_split = None
+
+    if cur_a2 == -1:
+        f_chroma2_split = f_chroma2[:, int(prev_a2 * feature_rate):]
+        if f_onset2 is not None:
+            f_onset2_split = f_onset2[:, int(prev_a2 * feature_rate):]
+        else:
+            f_onset2_split = None
+
+    else:
+        f_chroma2_split = f_chroma2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
+        if f_onset2 is not None:
+            f_onset2_split = f_onset2[:, int(prev_a2 * feature_rate):int(cur_a2 * feature_rate)]
+        else:
+            f_onset2_split = None
 
     return f_chroma1_split, f_onset1_split, f_chroma2_split, f_onset2_split
 
