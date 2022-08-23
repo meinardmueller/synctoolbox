@@ -210,6 +210,8 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
             prev_a1 = cur_a1
             prev_a2 = cur_a2
 
+        anchor_pairs.pop()
+
     return wp
 
 
