@@ -148,7 +148,7 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
         __check_anchor_pairs(anchor_pairs, f_chroma1.shape[1], f_chroma2.shape[1], input_feature_rate)
 
         # Add ending as the anchor point
-        anchor_pairs.append((f_chroma1.shape[1] / input_feature_rate, f_chroma2.shape[1] /input_feature_rate))
+        anchor_pairs.append((-1, -1))
 
         prev_a1 = 0
         prev_a2 = 0
