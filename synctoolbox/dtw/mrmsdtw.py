@@ -177,9 +177,12 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
 
             else:
                 if verbose:
-                    print('MrMsDTW is applied for the interval \n\t Feature sequence 1: %.2f - %.2f'
-                          '\n\t Feature sequence 2: %.2f - %.2f\n' % (prev_a1, cur_a1, prev_a2, cur_a2))
-
+                    if cur_a1 != -1 and cur_a2 != -1:
+                        print('MrMsDTW is applied for the interval \n\t Feature sequence 1: %.2f - %.2f'
+                              '\n\t Feature sequence 2: %.2f - %.2f\n' % (prev_a1, cur_a1, prev_a2, cur_a2))
+                    else:
+                        print('MrMsDTW is applied for the interval \n\t Feature sequence 1: %.2f - end'
+                              '\n\t Feature sequence 2: %.2f - end\n' % (prev_a1, prev_a2))
                 wp_cur = sync_via_mrmsdtw(f_chroma1=f_chroma1_split,
                                           f_chroma2=f_chroma2_split,
                                           f_onset1=f_onset1_split,
