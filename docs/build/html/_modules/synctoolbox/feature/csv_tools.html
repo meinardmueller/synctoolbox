@@ -71,7 +71,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synctoolbox.feature.csv_tools</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">import</span> <span class="nn">libfmp.c1</span>
+<span class="kn">import</span> <span class="nn">music21</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">synctoolbox.feature.pitch</span> <span class="kn">import</span> <span class="n">__visualize_pitch</span>
 <span class="kn">from</span> <span class="nn">synctoolbox.feature.pitch_onset</span> <span class="kn">import</span> <span class="n">__f_peaks_to_matrix</span>
@@ -399,6 +404,118 @@
     <span class="n">duration</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">duration</span>
 
+
+<div class="viewcode-block" id="music_xml_to_csv_musical_time"><a class="viewcode-back" href="../../../feature/csv_tools.html#synctoolbox.feature.csv_tools.music_xml_to_csv_musical_time">[docs]</a><span class="k">def</span> <span class="nf">music_xml_to_csv_musical_time</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">csv_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a music xml file to a list of note events, with starts and durations as fractions of measures, and stores</span>
+<span class="sd">    it as a csv file in libfmp format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xml (str or music21.stream.Score): Either a path to a music xml file or a music21.stream.Score</span>
+<span class="sd">        csv_filepath : str</span>
+<span class="sd">            Filepath to the .csv file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">xml_data</span> <span class="o">=</span> <span class="n">music21</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">music21</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">Score</span><span class="p">):</span>
+        <span class="n">xml_data</span> <span class="o">=</span> <span class="n">xml</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;xml must be a path to an xml file or music21.stream.Score&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Convert tied notes to single note events</span>
+    <span class="n">xml_data</span> <span class="o">=</span> <span class="n">xml_data</span><span class="o">.</span><span class="n">stripTies</span><span class="p">()</span>
+    <span class="c1"># Expand any repeat signs in the score. Unfortunately, for older versions of music21, this method throws errors if there are no repeats in the score, so we do some try-and-catch: https://github.com/cuthbertLab/music21/issues/355</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">xml_data_expanded</span> <span class="o">=</span> <span class="n">xml_data</span><span class="o">.</span><span class="n">expandRepeats</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">music21</span><span class="o">.</span><span class="n">repeat</span><span class="o">.</span><span class="n">ExpanderException</span><span class="p">:</span>
+        <span class="n">xml_data_expanded</span> <span class="o">=</span> <span class="n">xml_data</span>
+    <span class="n">xml_data</span> <span class="o">=</span> <span class="n">xml_data_expanded</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># First, get starts and ends of notes in terms of quarters (similar to &#39;xml_to_list&#39; in libfmp)</span>
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">xml_data</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
+        <span class="n">instrument</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">getInstrument</span><span class="p">()</span><span class="o">.</span><span class="n">partName</span>  <span class="c1"># Other interesting properties may be instrumentName and midiProgram, but often, these are not set correctly</span>
+        <span class="k">for</span> <span class="n">note</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">flat</span><span class="o">.</span><span class="n">notes</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">note</span><span class="o">.</span><span class="n">offset</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">note</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">note</span><span class="o">.</span><span class="n">quarterLength</span>
+            <span class="k">if</span> <span class="n">note</span><span class="o">.</span><span class="n">isChord</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">chord_note</span> <span class="ow">in</span> <span class="n">note</span><span class="o">.</span><span class="n">pitches</span><span class="p">:</span>
+                    <span class="n">pitch</span> <span class="o">=</span> <span class="n">chord_note</span><span class="o">.</span><span class="n">ps</span>
+                    <span class="n">volume</span> <span class="o">=</span> <span class="n">note</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">realized</span>
+                    <span class="n">score</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">instrument</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pitch</span> <span class="o">=</span> <span class="n">note</span><span class="o">.</span><span class="n">pitch</span><span class="o">.</span><span class="n">ps</span>
+                <span class="n">volume</span> <span class="o">=</span> <span class="n">note</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">realized</span>
+                <span class="n">score</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">instrument</span><span class="p">])</span>
+
+    <span class="c1"># To get the positions of measures in the score in terms of quarters, make sure that...</span>
+    <span class="n">measures_in_parts</span> <span class="o">=</span> <span class="p">[[</span><span class="n">measure</span> <span class="k">for</span> <span class="n">measure</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">getElementsByClass</span><span class="p">(</span><span class="n">music21</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">Measure</span><span class="p">)]</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">xml_data</span><span class="o">.</span><span class="n">parts</span><span class="p">]</span>
+    <span class="n">measure_positions_in_quarters</span> <span class="o">=</span> <span class="p">[[</span><span class="n">measure</span><span class="o">.</span><span class="n">offset</span> <span class="k">for</span> <span class="n">measure</span> <span class="ow">in</span> <span class="n">part</span><span class="p">]</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">measures_in_parts</span><span class="p">]</span>
+    <span class="c1"># ...all parts have the same number of measures and...</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span> <span class="k">for</span> <span class="n">ms</span> <span class="ow">in</span> <span class="n">measure_positions_in_quarters</span><span class="p">),</span> <span class="s2">&quot;Malformed musicxml: Not all parts have the same number of measures. Sometimes this can be fixed by im- and then exporting the file in musescore.&quot;</span>
+    <span class="c1"># ...that the positions of measures (in terms of quarters) are the same everywhere.</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xml_data</span><span class="o">.</span><span class="n">parts</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="mi">0</span><span class="p">]))),</span> <span class="s2">&quot;Malformed musicxml: Not all parts have the same measure positions. Sometimes this can be fixed by im- and then exporting the file in musescore.&quot;</span>  <span class="c1"># This happens for example for second piece in SWD.</span>
+
+    <span class="n">measure_positions_in_quarters</span> <span class="o">=</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">quarterLength</span> <span class="o">&lt;</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">barDuration</span><span class="o">.</span><span class="n">quarterLength</span><span class="p">:</span>
+        <span class="n">has_pickup_measure</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Start counting at 0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">has_pickup_measure</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Start counting at 1</span>
+    <span class="n">measure_positions_in_quarters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">quarterLength</span><span class="p">)</span>  <span class="c1"># End of last measure</span>
+    <span class="n">measure_positions_in_quarters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_position_in_fraction_of_measures</span><span class="p">(</span><span class="n">position_in_quarters</span><span class="p">,</span> <span class="n">is_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">position_in_quarters</span> <span class="o">==</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="n">is_end</span><span class="p">,</span> <span class="s2">&quot;Error when converting to measure axis: Found a note start on the last measure position.&quot;</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.999</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">has_pickup_measure</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">position_in_quarters</span> <span class="o">&lt;</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;Error when converting to measure axis: Found a note position past the first or last measure position.&quot;</span>
+        <span class="n">measure_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measure_positions_in_quarters</span> <span class="o">&lt;=</span> <span class="n">position_in_quarters</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">has_pickup_measure</span> <span class="ow">and</span> <span class="n">measure_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">measure_length_in_quarters</span> <span class="o">=</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">barDuration</span><span class="o">.</span><span class="n">quarterLength</span>
+            <span class="n">relative_position_in_measure</span> <span class="o">=</span> <span class="p">(</span><span class="n">position_in_quarters</span> <span class="o">+</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">barDuration</span><span class="o">.</span><span class="n">quarterLength</span> <span class="o">-</span> <span class="n">measures_in_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">quarterLength</span><span class="p">)</span> <span class="o">/</span> <span class="n">measure_length_in_quarters</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">measure_length_in_quarters</span> <span class="o">=</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="n">measure_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="n">measure_index</span><span class="p">]</span>
+            <span class="n">relative_position_in_measure</span> <span class="o">=</span> <span class="p">(</span><span class="n">position_in_quarters</span> <span class="o">-</span> <span class="n">measure_positions_in_quarters</span><span class="p">[</span><span class="n">measure_index</span><span class="p">])</span> <span class="o">/</span> <span class="n">measure_length_in_quarters</span>
+        <span class="k">if</span> <span class="n">is_end</span> <span class="ow">and</span> <span class="n">relative_position_in_measure</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">measure_index</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">relative_position_in_measure</span> <span class="o">=</span> <span class="mf">0.999</span>
+        <span class="k">return</span> <span class="n">measure_index</span> <span class="o">+</span> <span class="n">relative_position_in_measure</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">has_pickup_measure</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score</span><span class="p">)):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">get_position_in_fraction_of_measures</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">get_position_in_fraction_of_measures</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">is_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># To stay compatible with libfmp functions, we store this as a list with start and duration,</span>
+        <span class="c1"># although many of our annotations are actually stored as start and end...</span>
+        <span class="n">score</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">score</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">libfmp</span><span class="o">.</span><span class="n">c1</span><span class="o">.</span><span class="n">list_to_csv</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">csv_filepath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="midi_to_music_xml_musescore"><a class="viewcode-back" href="../../../feature/csv_tools.html#synctoolbox.feature.csv_tools.midi_to_music_xml_musescore">[docs]</a><span class="k">def</span> <span class="nf">midi_to_music_xml_musescore</span><span class="p">(</span><span class="n">midi_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">musescore_executable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;musescore&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a midi file to a music xml score using musescore. This only works for score-based midis, not performed</span>
+<span class="sd">    midis. Even for score-based midis, errors may occur. The resulting music xml should always be checked manually.</span>
+<span class="sd">    For this method to work, musescore must be installed on the system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    midi_filepath: Path to the midi file. A corresponding .mxl file of the same name will be created in the same directory.</span>
+<span class="sd">    musescore_executable: Path to or name of the musescore executable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">getstatusoutput</span><span class="p">(</span><span class="n">musescore_executable</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Could not call musescore via command </span><span class="si">{</span><span class="n">musescore_executable</span><span class="si">}</span><span class="s2">. To use midi_to_music_xml_musescore, make sure musescore is installed.&quot;</span>
+
+    <span class="n">musicxml_filepath</span> <span class="o">=</span> <span class="n">midi_filepath</span><span class="p">[:</span><span class="n">midi_filepath</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="s2">&quot;.mxl&quot;</span>
+    <span class="n">exitcode</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">getstatusoutput</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">musescore_executable</span><span class="si">}</span><span class="s2"> -o &#39;</span><span class="si">{</span><span class="n">musicxml_filepath</span><span class="si">}</span><span class="s2">&#39; &#39;</span><span class="si">{</span><span class="n">midi_filepath</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exitcode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Could not convert </span><span class="si">{</span><span class="n">midi_filepath</span><span class="si">}</span><span class="s2"> to musicxml. Musescore output: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully converted </span><span class="si">{</span><span class="n">midi_filepath</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">musicxml_filepath</span><span class="si">}</span><span class="s2"> using musescore&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">music_xml_to_csv_musical_time</span><span class="p">(</span><span class="s2">&quot;/home/ahnonay/Dev/synctoolbox/RM-C001.mxl&quot;</span><span class="p">,</span> <span class="s2">&quot;/home/ahnonay/Dev/synctoolbox/RM-C001.csv&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>

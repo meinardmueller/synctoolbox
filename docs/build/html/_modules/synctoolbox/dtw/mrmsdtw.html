@@ -13,6 +13,7 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -71,8 +72,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synctoolbox.dtw.mrmsdtw</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">synctoolbox.dtw.anchor</span> <span class="kn">import</span> <span class="n">derive_anchors_from_projected_alignment</span><span class="p">,</span> <span class="n">derive_neighboring_anchors</span><span class="p">,</span> \
     <span class="n">project_alignment_on_a_new_feature_rate</span>
@@ -82,87 +85,282 @@
 <span class="kn">from</span> <span class="nn">synctoolbox.feature.utils</span> <span class="kn">import</span> <span class="n">smooth_downsample_feature</span><span class="p">,</span> <span class="n">normalize_feature</span>
 
 
+<div class="viewcode-block" id="sync_via_mrmsdtw_with_anchors"><a class="viewcode-back" href="../../../dtw.html#synctoolbox.dtw.mrmsdtw.sync_via_mrmsdtw_with_anchors">[docs]</a><span class="k">def</span> <span class="nf">sync_via_mrmsdtw_with_anchors</span><span class="p">(</span><span class="n">f_chroma1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                  <span class="n">f_chroma2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                  <span class="n">f_onset1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">f_onset2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">input_feature_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+                                  <span class="n">step_sizes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                                  <span class="n">step_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                                  <span class="n">threshold_rec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+                                  <span class="n">win_len_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">201</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                                  <span class="n">downsamp_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">dtw_implementation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;synctoolbox&#39;</span><span class="p">,</span>
+                                  <span class="n">normalize_chroma</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">chroma_norm_ord</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                                  <span class="n">chroma_norm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+                                  <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MrMsDTW result&quot;</span><span class="p">,</span>
+                                  <span class="n">anchor_pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">linear_inp_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.</span>
+<span class="sd">        MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint</span>
+<span class="sd">        regions defined by the alignment found on the previous, coarser level.</span>
+<span class="sd">        If onset features are provided, these are used on the finest level in addition to chroma</span>
+<span class="sd">        to provide higher synchronization accuracy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f_chroma1 : np.ndarray [shape=(12, N)]</span>
+<span class="sd">            Chroma feature matrix of the first sequence</span>
+
+<span class="sd">        f_chroma2 : np.ndarray [shape=(12, M)]</span>
+<span class="sd">            Chroma feature matrix of the second sequence</span>
+
+<span class="sd">        f_onset1 : np.ndarray [shape=(L, N)]</span>
+<span class="sd">            Onset feature matrix of the first sequence (optional, default: None)</span>
+
+<span class="sd">        f_onset2 : np.ndarray [shape=(L, M)]</span>
+<span class="sd">            Onset feature matrix of the second sequence (optional, default: None)</span>
+
+<span class="sd">        input_feature_rate: int</span>
+<span class="sd">            Input feature rate of the chroma features (default: 50)</span>
+
+<span class="sd">        step_sizes: np.ndarray</span>
+<span class="sd">            DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))</span>
+
+<span class="sd">        step_weights: np.ndarray</span>
+<span class="sd">            DTW step weights (np.array([1.0, 1.0, 1.0]))</span>
+
+<span class="sd">        threshold_rec: int</span>
+<span class="sd">            Defines the maximum area that is spanned by the rectangle of two</span>
+<span class="sd">            consecutive elements in the alignment (default: 10000)</span>
+
+<span class="sd">        win_len_smooth : np.ndarray</span>
+<span class="sd">            Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))</span>
+
+<span class="sd">        downsamp_smooth : np.ndarray</span>
+<span class="sd">            Downsampling factors (default: np.array([50, 25, 5, 1]))</span>
+
+<span class="sd">        verbose : bool</span>
+<span class="sd">            Set `True` for visualization (default: False)</span>
+
+<span class="sd">        dtw_implementation : str</span>
+<span class="sd">            DTW implementation, librosa or synctoolbox (default: synctoolbox)</span>
+
+<span class="sd">        normalize_chroma : bool</span>
+<span class="sd">            Set `True` to normalize input chroma features after each downsampling</span>
+<span class="sd">            and smoothing operation.</span>
+
+<span class="sd">        chroma_norm_ord: int</span>
+<span class="sd">            Order of chroma normalization, relevant if ``normalize_chroma`` is True.</span>
+<span class="sd">            (default: 2)</span>
+
+<span class="sd">        chroma_norm_threshold: float</span>
+<span class="sd">            If the norm falls below threshold for a feature vector, then the</span>
+<span class="sd">            normalized feature vector is set to be the unit vector. Relevant, if</span>
+<span class="sd">            ``normalize_chroma`` is True (default: 0.001)</span>
+
+<span class="sd">        visualization_title : str</span>
+<span class="sd">            Title for the visualization plots. Only relevant if &#39;verbose&#39; is True</span>
+<span class="sd">            (default: &quot;MrMsDTW result&quot;)</span>
+
+<span class="sd">        anchor_pairs: List[Tuple]</span>
+<span class="sd">            Anchor pairs given in seconds. Note that</span>
+<span class="sd">            * (0, 0) and (&lt;audio-len1&gt;, &lt;audio-len2&gt;) are not allowed.</span>
+<span class="sd">            * Anchors must be monotonously increasing.</span>
+
+<span class="sd">        linear_inp_idx: List[int]</span>
+<span class="sd">            List of the indices of intervals created by anchor pairs, for which</span>
+<span class="sd">            MrMsDTW shouldn&#39;t be run, e.g., if the interval only involves silence.</span>
+
+<span class="sd">            0        ap1        ap2        ap3</span>
+<span class="sd">            |         |          |          |</span>
+<span class="sd">            |  idx0   |   idx1   |  idx2    |  idx3 OR idx-1</span>
+<span class="sd">            |         |          |          |</span>
+
+<span class="sd">            Note that index -1 corresponds to the last interval, which begins with</span>
+<span class="sd">            the last anchor pair until the end of the audio files.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        wp : np.ndarray [shape=(2, T)]</span>
+<span class="sd">            Resulting warping path which indicates synchronized indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">anchor_pairs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">wp</span> <span class="o">=</span> <span class="n">sync_via_mrmsdtw</span><span class="p">(</span><span class="n">f_chroma1</span><span class="o">=</span><span class="n">f_chroma1</span><span class="p">,</span>
+                              <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2</span><span class="p">,</span>
+                              <span class="n">f_onset1</span><span class="o">=</span><span class="n">f_onset1</span><span class="p">,</span>
+                              <span class="n">f_onset2</span><span class="o">=</span><span class="n">f_onset2</span><span class="p">,</span>
+                              <span class="n">input_feature_rate</span><span class="o">=</span><span class="n">input_feature_rate</span><span class="p">,</span>
+                              <span class="n">step_sizes</span><span class="o">=</span><span class="n">step_sizes</span><span class="p">,</span>
+                              <span class="n">step_weights</span><span class="o">=</span><span class="n">step_weights</span><span class="p">,</span>
+                              <span class="n">threshold_rec</span><span class="o">=</span><span class="n">threshold_rec</span><span class="p">,</span>
+                              <span class="n">win_len_smooth</span><span class="o">=</span><span class="n">win_len_smooth</span><span class="p">,</span>
+                              <span class="n">downsamp_smooth</span><span class="o">=</span><span class="n">downsamp_smooth</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                              <span class="n">dtw_implementation</span><span class="o">=</span><span class="n">dtw_implementation</span><span class="p">,</span>
+                              <span class="n">normalize_chroma</span><span class="o">=</span><span class="n">normalize_chroma</span><span class="p">,</span>
+                              <span class="n">chroma_norm_ord</span><span class="o">=</span><span class="n">chroma_norm_ord</span><span class="p">,</span>
+                              <span class="n">chroma_norm_threshold</span><span class="o">=</span><span class="n">chroma_norm_threshold</span><span class="p">,</span>
+                              <span class="n">visualization_title</span><span class="o">=</span><span class="n">visualization_title</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># constant_intervals = [((0,  x1), (0, y1), False),</span>
+        <span class="c1">#                       ((x1, x2), (y1, y2), True),</span>
+        <span class="c1">#                       ((x2, -1), (y2, -1), False)]</span>
+        <span class="n">wp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Anchor points are given!&#39;</span><span class="p">)</span>
+
+        <span class="n">__check_anchor_pairs</span><span class="p">(</span><span class="n">anchor_pairs</span><span class="p">,</span> <span class="n">f_chroma1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">f_chroma2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_feature_rate</span><span class="p">)</span>
+
+        <span class="c1"># Add ending as the anchor point</span>
+        <span class="n">anchor_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">f_chroma1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">input_feature_rate</span><span class="p">,</span> <span class="n">f_chroma2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span><span class="n">input_feature_rate</span><span class="p">))</span>
+
+        <span class="n">prev_a1</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">prev_a2</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">anchor_pair</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">anchor_pairs</span><span class="p">):</span>
+            <span class="n">cur_a1</span><span class="p">,</span> <span class="n">cur_a2</span> <span class="o">=</span> <span class="n">anchor_pair</span>
+
+            <span class="c1"># Split the features</span>
+            <span class="n">f_chroma1_split</span><span class="p">,</span> <span class="n">f_onset1_split</span><span class="p">,</span> <span class="n">f_chroma2_split</span><span class="p">,</span> <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="n">__split_features</span><span class="p">(</span><span class="n">f_chroma1</span><span class="p">,</span>
+                                                                                                <span class="n">f_onset1</span><span class="p">,</span>
+                                                                                                <span class="n">f_chroma2</span><span class="p">,</span>
+                                                                                                <span class="n">f_onset2</span><span class="p">,</span>
+                                                                                                <span class="n">cur_a1</span><span class="p">,</span>
+                                                                                                <span class="n">cur_a2</span><span class="p">,</span>
+                                                                                                <span class="n">prev_a1</span><span class="p">,</span>
+                                                                                                <span class="n">prev_a2</span><span class="p">,</span>
+                                                                                                <span class="n">input_feature_rate</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">linear_inp_idx</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchor_pairs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">linear_inp_idx</span><span class="p">:</span>
+                <span class="c1"># Generate a diagonal warping path, if the algorithm is not supposed to executed.</span>
+                <span class="c1"># A typical scenario is the silence breaks which are enclosed by two anchor points.</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;A diagonal warping path is generated for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="s1">&#39;</span>
+                          <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">cur_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">,</span> <span class="n">cur_a2</span><span class="p">))</span>
+                <span class="n">wp_cur</span> <span class="o">=</span> <span class="n">__diagonal_warping_path</span><span class="p">(</span><span class="n">f_chroma1_split</span><span class="p">,</span> <span class="n">f_chroma2_split</span><span class="p">)</span>
+                <span class="n">wp_cur</span> <span class="o">*=</span> <span class="n">input_feature_rate</span> <span class="o">/</span> <span class="mi">1000</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MrMsDTW is applied for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="s1">&#39;</span>
+                          <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">cur_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">,</span> <span class="n">cur_a2</span><span class="p">))</span>
+
+                <span class="n">wp_cur</span> <span class="o">=</span> <span class="n">sync_via_mrmsdtw</span><span class="p">(</span><span class="n">f_chroma1</span><span class="o">=</span><span class="n">f_chroma1_split</span><span class="p">,</span>
+                                          <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_split</span><span class="p">,</span>
+                                          <span class="n">f_onset1</span><span class="o">=</span><span class="n">f_onset1_split</span><span class="p">,</span>
+                                          <span class="n">f_onset2</span><span class="o">=</span><span class="n">f_onset2_split</span><span class="p">,</span>
+                                          <span class="n">input_feature_rate</span><span class="o">=</span><span class="n">input_feature_rate</span><span class="p">,</span>
+                                          <span class="n">step_sizes</span><span class="o">=</span><span class="n">step_sizes</span><span class="p">,</span>
+                                          <span class="n">step_weights</span><span class="o">=</span><span class="n">step_weights</span><span class="p">,</span>
+                                          <span class="n">threshold_rec</span><span class="o">=</span><span class="n">threshold_rec</span><span class="p">,</span>
+                                          <span class="n">win_len_smooth</span><span class="o">=</span><span class="n">win_len_smooth</span><span class="p">,</span>
+                                          <span class="n">downsamp_smooth</span><span class="o">=</span><span class="n">downsamp_smooth</span><span class="p">,</span>
+                                          <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                          <span class="n">dtw_implementation</span><span class="o">=</span><span class="n">dtw_implementation</span><span class="p">,</span>
+                                          <span class="n">normalize_chroma</span><span class="o">=</span><span class="n">normalize_chroma</span><span class="p">,</span>
+                                          <span class="n">chroma_norm_ord</span><span class="o">=</span><span class="n">chroma_norm_ord</span><span class="p">,</span>
+                                          <span class="n">chroma_norm_threshold</span><span class="o">=</span><span class="n">chroma_norm_threshold</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">wp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">wp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">wp_cur</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Concatenate warping paths</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">wp</span><span class="p">,</span> <span class="n">wp_cur</span> <span class="o">+</span> <span class="n">wp</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">prev_a1</span> <span class="o">=</span> <span class="n">cur_a1</span>
+            <span class="n">prev_a2</span> <span class="o">=</span> <span class="n">cur_a2</span>
+
+    <span class="k">return</span> <span class="n">wp</span></div>
+
+
 <div class="viewcode-block" id="sync_via_mrmsdtw"><a class="viewcode-back" href="../../../dtw.html#synctoolbox.dtw.mrmsdtw.sync_via_mrmsdtw">[docs]</a><span class="k">def</span> <span class="nf">sync_via_mrmsdtw</span><span class="p">(</span><span class="n">f_chroma1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                      <span class="n">f_chroma2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                      <span class="n">f_onset1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">f_onset2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">input_feature_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+                     <span class="n">input_feature_rate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
                      <span class="n">step_sizes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
                      <span class="n">step_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
-                     <span class="n">threshold_rec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">win_len_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">201</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                     <span class="n">threshold_rec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+                     <span class="n">win_len_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">201</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
                      <span class="n">downsamp_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
                      <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                      <span class="n">dtw_implementation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;synctoolbox&#39;</span><span class="p">,</span>
                      <span class="n">normalize_chroma</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                      <span class="n">chroma_norm_ord</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
                      <span class="n">chroma_norm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
-                     <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MrMsDTW result&quot;</span><span class="p">):</span>
+                     <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MrMsDTW result&quot;</span><span class="p">,</span>
+                     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.</span>
-<span class="sd">    MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint</span>
-<span class="sd">    regions defined by the alignment found on the previous, coarser level.</span>
-<span class="sd">    If onset features are provided, these are used on the finest level in addition to chroma</span>
-<span class="sd">    to provide higher synchronization accuracy.</span>
+<span class="sd">        MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint</span>
+<span class="sd">        regions defined by the alignment found on the previous, coarser level.</span>
+<span class="sd">        If onset features are provided, these are used on the finest level in addition to chroma</span>
+<span class="sd">        to provide higher synchronization accuracy.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    f_chroma1 : np.ndarray [shape=(12, N)]</span>
-<span class="sd">        Chroma feature matrix of the first sequence</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f_chroma1 : np.ndarray [shape=(12, N)]</span>
+<span class="sd">            Chroma feature matrix of the first sequence</span>
 
-<span class="sd">    f_chroma2 : np.ndarray [shape=(12, M)]</span>
-<span class="sd">        Chroma feature matrix of the second sequence</span>
+<span class="sd">        f_chroma2 : np.ndarray [shape=(12, M)]</span>
+<span class="sd">            Chroma feature matrix of the second sequence</span>
 
-<span class="sd">    f_onset1 : np.ndarray [shape=(L, N)]</span>
-<span class="sd">        Onset feature matrix of the first sequence (optional, default: None)</span>
+<span class="sd">        f_onset1 : np.ndarray [shape=(L, N)]</span>
+<span class="sd">            Onset feature matrix of the first sequence (optional, default: None)</span>
 
-<span class="sd">    f_onset2 : np.ndarray [shape=(L, M)]</span>
-<span class="sd">        Onset feature matrix of the second sequence (optional, default: None)</span>
+<span class="sd">        f_onset2 : np.ndarray [shape=(L, M)]</span>
+<span class="sd">            Onset feature matrix of the second sequence (optional, default: None)</span>
 
-<span class="sd">    input_feature_rate: float</span>
-<span class="sd">        Input feature rate of the chroma features (default: 50)</span>
+<span class="sd">        input_feature_rate: int</span>
+<span class="sd">            Input feature rate of the chroma features (default: 50)</span>
 
-<span class="sd">    step_sizes: np.ndarray</span>
-<span class="sd">        DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))</span>
+<span class="sd">        step_sizes: np.ndarray</span>
+<span class="sd">            DTW step sizes (default: np.array([[1, 0], [0, 1], [1, 1]]))</span>
 
-<span class="sd">    step_weights: np.ndarray</span>
-<span class="sd">        DTW step weights (np.array([1.0, 1.0, 1.0]))</span>
+<span class="sd">        step_weights: np.ndarray</span>
+<span class="sd">            DTW step weights (np.array([1.0, 1.0, 1.0]))</span>
 
-<span class="sd">    threshold_rec: int</span>
-<span class="sd">        Defines the maximum area that is spanned by the rectangle of two</span>
-<span class="sd">        consecutive elements in the alignment (default: 10000)</span>
+<span class="sd">        threshold_rec: int</span>
+<span class="sd">            Defines the maximum area that is spanned by the rectangle of two</span>
+<span class="sd">            consecutive elements in the alignment (default: 10000)</span>
 
-<span class="sd">    win_len_smooth : np.ndarray</span>
-<span class="sd">        Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))</span>
+<span class="sd">        win_len_smooth : np.ndarray</span>
+<span class="sd">            Window lengths for chroma feature smoothing (default: np.array([201, 101, 21, 1]))</span>
 
-<span class="sd">    downsamp_smooth : np.ndarray</span>
-<span class="sd">        Downsampling factors (default: np.array([50, 25, 5, 1]))</span>
+<span class="sd">        downsamp_smooth : np.ndarray</span>
+<span class="sd">            Downsampling factors (default: np.array([50, 25, 5, 1]))</span>
 
-<span class="sd">    verbose : bool</span>
-<span class="sd">        Set `True` for visualization (default: False)</span>
+<span class="sd">        verbose : bool</span>
+<span class="sd">            Set `True` for visualization (default: False)</span>
 
-<span class="sd">    dtw_implementation : str</span>
-<span class="sd">        DTW implementation, librosa or synctoolbox (default: synctoolbox)</span>
+<span class="sd">        dtw_implementation : str</span>
+<span class="sd">            DTW implementation, librosa or synctoolbox (default: synctoolbox)</span>
 
-<span class="sd">    normalize_chroma : bool</span>
-<span class="sd">        Set `True` to normalize input chroma features after each downsampling</span>
-<span class="sd">        and smoothing operation.</span>
+<span class="sd">        normalize_chroma : bool</span>
+<span class="sd">            Set `True` to normalize input chroma features after each downsampling</span>
+<span class="sd">            and smoothing operation.</span>
 
-<span class="sd">    chroma_norm_ord: int</span>
-<span class="sd">        Order of chroma normalization, relevant if ``normalize_chroma`` is True.</span>
-<span class="sd">        (default: 2)</span>
+<span class="sd">        chroma_norm_ord: int</span>
+<span class="sd">            Order of chroma normalization, relevant if ``normalize_chroma`` is True.</span>
+<span class="sd">            (default: 2)</span>
 
-<span class="sd">    chroma_norm_threshold: float</span>
-<span class="sd">        If the norm falls below threshold for a feature vector, then the</span>
-<span class="sd">        normalized feature vector is set to be the unit vector. Relevant, if</span>
-<span class="sd">        ``normalize_chroma`` is True (default: 0.001)</span>
+<span class="sd">        chroma_norm_threshold: float</span>
+<span class="sd">            If the norm falls below threshold for a feature vector, then the</span>
+<span class="sd">            normalized feature vector is set to be the unit vector. Relevant, if</span>
+<span class="sd">            ``normalize_chroma`` is True (default: 0.001)</span>
 
-<span class="sd">    visualization_title : str</span>
-<span class="sd">        Title for the visualization plots. Only relevant if &#39;verbose&#39; is True</span>
-<span class="sd">        (default: &quot;MrMsDTW result&quot;)</span>
+<span class="sd">        visualization_title : str</span>
+<span class="sd">            Title for the visualization plots. Only relevant if &#39;verbose&#39; is True</span>
+<span class="sd">            (default: &quot;MrMsDTW result&quot;)</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    alignment : np.ndarray [shape=(2, T)]</span>
-<span class="sd">        Resulting warping path</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        alignment: np.ndarray [shape=(2, T)]</span>
+<span class="sd">            Resulting warping path which indicates synchronized indices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># If onset features are given as input, high resolution MrMsDTW is activated.</span>
     <span class="n">high_res</span> <span class="o">=</span> <span class="kc">False</span>
@@ -180,9 +378,12 @@
     <span class="n">cost_matrix_size_old</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
     <span class="n">feature_rate_old</span> <span class="o">=</span> <span class="n">input_feature_rate</span> <span class="o">/</span> <span class="n">downsamp_smooth</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">alignment</span> <span class="o">=</span> <span class="kc">None</span>
-
     <span class="n">total_computation_time</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iterations</span><span class="p">):</span>
+
+    <span class="c1"># If the area is less than the threshold_rec, don&#39;t apply the multiscale DTW.</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_iterations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">__compute_area</span><span class="p">(</span><span class="n">f_chroma1</span><span class="p">,</span> <span class="n">f_chroma2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold_rec</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">it</span> <span class="o">&lt;</span> <span class="n">num_iterations</span><span class="p">:</span>
         <span class="n">tic1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
         <span class="c1"># Smooth and downsample given raw features</span>
@@ -230,12 +431,14 @@
                                                                         <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_cur</span><span class="p">,</span>
                                                                         <span class="n">f_onset1</span><span class="o">=</span><span class="n">f_onset1</span><span class="p">,</span>
                                                                         <span class="n">f_onset2</span><span class="o">=</span><span class="n">f_onset2</span><span class="p">,</span>
-                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">anchors</span><span class="p">)</span>
+                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">anchors</span><span class="p">,</span>
+                                                                        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cost_matrices_step1</span> <span class="o">=</span> <span class="n">compute_cost_matrices_between_anchors</span><span class="p">(</span><span class="n">f_chroma1</span><span class="o">=</span><span class="n">f_chroma1_cur</span><span class="p">,</span>
                                                                         <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_cur</span><span class="p">,</span>
-                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">anchors</span><span class="p">)</span>
+                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">anchors</span><span class="p">,</span>
+                                                                        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="n">wp_list</span> <span class="o">=</span> <span class="n">compute_warping_paths_from_cost_matrices</span><span class="p">(</span><span class="n">cost_matrices_step1</span><span class="p">,</span>
                                                            <span class="n">step_sizes</span><span class="o">=</span><span class="n">step_sizes</span><span class="p">,</span>
@@ -278,12 +481,14 @@
                                                                         <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_cur</span><span class="p">,</span>
                                                                         <span class="n">f_onset1</span><span class="o">=</span><span class="n">f_onset1</span><span class="p">,</span>
                                                                         <span class="n">f_onset2</span><span class="o">=</span><span class="n">f_onset2</span><span class="p">,</span>
-                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">neighboring_anchors</span><span class="p">)</span>
+                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">neighboring_anchors</span><span class="p">,</span>
+                                                                        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cost_matrices_step2</span> <span class="o">=</span> <span class="n">compute_cost_matrices_between_anchors</span><span class="p">(</span><span class="n">f_chroma1</span><span class="o">=</span><span class="n">f_chroma1_cur</span><span class="p">,</span>
                                                                         <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_cur</span><span class="p">,</span>
-                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">neighboring_anchors</span><span class="p">)</span>
+                                                                        <span class="n">anchors</span><span class="o">=</span><span class="n">neighboring_anchors</span><span class="p">,</span>
+                                                                        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="n">wp_list_refine</span> <span class="o">=</span> <span class="n">compute_warping_paths_from_cost_matrices</span><span class="p">(</span><span class="n">cost_matrices</span><span class="o">=</span><span class="n">cost_matrices_step2</span><span class="p">,</span>
                                                                   <span class="n">step_sizes</span><span class="o">=</span><span class="n">step_sizes</span><span class="p">,</span>
@@ -312,17 +517,87 @@
                                  <span class="n">plot_title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">visualization_title</span><span class="si">}</span><span class="s2"> - Level </span><span class="si">{</span><span class="n">it</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Level </span><span class="si">{}</span><span class="s1"> computation time: </span><span class="si">{:.2f}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">computation_time_it</span><span class="p">))</span>
 
+        <span class="n">it</span> <span class="o">+=</span> <span class="mi">1</span>
+
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Computation time of MrMsDTW: </span><span class="si">{:.2f}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">total_computation_time</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">alignment</span></div>
 
 
+<span class="k">def</span> <span class="nf">__diagonal_warping_path</span><span class="p">(</span><span class="n">f1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                            <span class="n">f2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generates a diagonal warping path given two feature sequences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f1: np.ndarray [shape=(_, N)]</span>
+<span class="sd">        First feature sequence</span>
+
+<span class="sd">    f2: np.ndarray [shape=(_, M)]</span>
+<span class="sd">        Second feature sequence</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray: Diagonal warping path [shape=(2, T)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_size</span> <span class="o">==</span> <span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">))])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">)])</span>
+
+
+<span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">__compute_area</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the area of the cost matrix given two feature sequences</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f1: np.ndarray</span>
+<span class="sd">        First feature sequence</span>
+
+<span class="sd">    f2: np.ndarray</span>
+<span class="sd">        Second feature sequence</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int: Area of the cost matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">f1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">f2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">__split_features</span><span class="p">(</span><span class="n">f_chroma1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                     <span class="n">f_onset1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                     <span class="n">f_chroma2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                     <span class="n">f_onset2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                     <span class="n">cur_a1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                     <span class="n">cur_a2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                     <span class="n">prev_a1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                     <span class="n">prev_a2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                     <span class="n">feature_rate</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+
+    <span class="c1"># Split the features</span>
+    <span class="n">f_chroma1_split</span> <span class="o">=</span> <span class="n">f_chroma1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">f_onset1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="n">f_onset1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">f_chroma2_split</span> <span class="o">=</span> <span class="n">f_chroma2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">f_onset2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="n">f_onset2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">f_chroma1_split</span><span class="p">,</span> <span class="n">f_onset1_split</span><span class="p">,</span> <span class="n">f_chroma2_split</span><span class="p">,</span> <span class="n">f_onset2_split</span>
+
+
 <span class="k">def</span> <span class="nf">__refine_wp</span><span class="p">(</span><span class="n">wp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                 <span class="n">anchors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                <span class="n">wp_list_refine</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                <span class="n">wp_list_refine</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
                 <span class="n">neighboring_anchors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                <span class="n">neighboring_anchor_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">neighboring_anchor_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="n">wp_length</span> <span class="o">=</span> <span class="n">wp</span><span class="p">[:,</span> <span class="n">neighboring_anchor_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">last_list</span> <span class="o">=</span> <span class="n">wp</span><span class="p">[:,</span> <span class="n">neighboring_anchor_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
         <span class="n">wp</span><span class="p">[:,</span> <span class="n">neighboring_anchor_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">wp_length</span><span class="p">)</span>
@@ -333,6 +608,50 @@
                                            <span class="n">anchors</span><span class="o">=</span><span class="n">A_tmp</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wp_res</span>
+
+
+<span class="k">def</span> <span class="nf">__check_anchor_pairs</span><span class="p">(</span><span class="n">anchor_pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+                         <span class="n">f_len1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                         <span class="n">f_len2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                         <span class="n">feature_rate</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensures that the anchors satisfy the conditions</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    anchor_pairs: List[Tuple]</span>
+<span class="sd">        List of anchor pairs</span>
+
+<span class="sd">    f_len1: int</span>
+<span class="sd">        Length of the first feature sequence</span>
+
+<span class="sd">    f_len2: int</span>
+<span class="sd">        Length of the second feature sequence</span>
+
+<span class="sd">    feature_rate: int</span>
+<span class="sd">        Input feature rate of the features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prev_a1</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">prev_a2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">anchor_pair</span> <span class="ow">in</span> <span class="n">anchor_pairs</span><span class="p">:</span>
+        <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">anchor_pair</span>
+
+        <span class="k">if</span> <span class="n">a1</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">a2</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Starting point must be a positive number!&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">a1</span> <span class="o">&gt;</span> <span class="n">f_len1</span> <span class="o">/</span> <span class="n">feature_rate</span> <span class="ow">or</span> <span class="n">a2</span> <span class="o">&gt;</span> <span class="n">f_len2</span> <span class="o">/</span> <span class="n">feature_rate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Anchor points cannot be greater than the length of the input audio files!&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">a1</span> <span class="o">==</span> <span class="n">f_len1</span> <span class="ow">and</span> <span class="n">a2</span> <span class="o">==</span> <span class="n">f_len2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Both anchor points cannot be equal to the length of the audio files.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">a1</span> <span class="o">==</span> <span class="n">prev_a1</span> <span class="ow">and</span> <span class="n">a2</span> <span class="o">==</span> <span class="n">prev_a2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Duplicate anchor pairs are not allowed!&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">a1</span> <span class="o">&lt;</span> <span class="n">prev_a1</span> <span class="ow">or</span> <span class="n">a2</span> <span class="o">&lt;</span> <span class="n">prev_a2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Anchor points must be monotonously increasing.&#39;</span><span class="p">)</span>
+
+        <span class="n">prev_a1</span> <span class="o">=</span> <span class="n">a1</span>
+        <span class="n">prev_a2</span> <span class="o">=</span> <span class="n">a2</span>
 </pre></div>
 
            </div>

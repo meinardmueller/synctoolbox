@@ -1,5 +1,6 @@
 import numpy as np
 from libfmp.c3 import compute_strict_alignment_path_mask
+from typing import List
 
 from synctoolbox.dtw.core import compute_warping_path
 from synctoolbox.dtw.cost import *
@@ -36,7 +37,9 @@ def compute_optimal_chroma_shift(f_chroma1: np.ndarray,
         Optimal chroma shift which minimizes the DTW cost.
     """
     if f_chroma2.shape[1] >= 9000 or f_chroma1.shape[1] >= 9000:
-        print("Warning: You are attempting to find the optimal chroma shift on sequences of length >= 9000. This involves full DTW computation. You'll probably want to smooth and downsample your sequences to a lower feature resolution before doing this.")
+        print("Warning: You are attempting to find the optimal chroma shift on sequences of length >= 9000. "
+              "This involves full DTW computation. You'll probably want to smooth and downsample your sequences to a"
+              " lower feature resolution before doing this.")
     opt_chroma_shift = 0
     dtw_cost = np.inf
     for chroma_shift in chroma_transpositions:
@@ -49,10 +52,10 @@ def compute_optimal_chroma_shift(f_chroma1: np.ndarray,
     return opt_chroma_shift
 
 
-def compute_warping_paths_from_cost_matrices(cost_matrices: list,
+def compute_warping_paths_from_cost_matrices(cost_matrices: List,
                                              step_sizes: np.array = np.array([[1, 0], [0, 1], [1, 1]], int),
                                              step_weights: np.array = np.array([1.0, 1.0, 1.0], np.float64),
-                                             implementation: str = 'synctoolbox') -> list:
+                                             implementation: str = 'synctoolbox') -> List:
     """Computes a path via DTW on each matrix in cost_matrices
 
     Parameters
@@ -84,7 +87,8 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
                                           f_chroma2: np.ndarray,
                                           anchors: np.ndarray,
                                           f_onset1: np.ndarray = None,
-                                          f_onset2: np.ndarray = None) -> list:
+                                          f_onset2: np.ndarray = None,
+                                          alpha: float = 0.5) -> List:
     """Computes cost matrices for the given features between subsequent
     pairs of anchors points.
 
@@ -105,6 +109,9 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
     f_onset2 : np.ndarray [shape=(L, M)]
         Onset feature matrix of the second sequence
 
+    alpha: float
+        Alpha parameter to weight the cost functions.
+
     Returns
     -------
     cost_matrices: list
@@ -123,14 +130,15 @@ def compute_cost_matrices_between_anchors(f_chroma1: np.ndarray,
             cost_matrices.append(compute_high_res_cost_matrix(f_chroma1[:, a1[0]: a2[0] + 1],
                                                               f_chroma2[:, a1[1]: a2[1] + 1],
                                                               f_onset1[:, a1[0]: a2[0] + 1],
-                                                              f_onset2[:, a1[1]: a2[1] + 1]))
+                                                              f_onset2[:, a1[1]: a2[1] + 1],
+                                                              weights=np.array([alpha, 1-alpha])))
         else:
             cost_matrices.append(cosine_distance(f_chroma1[:, a1[0]: a2[0] + 1],
                                                  f_chroma2[:, a1[1]: a2[1] + 1]))
     return cost_matrices
 
 
-def build_path_from_warping_paths(warping_paths: list,
+def build_path_from_warping_paths(warping_paths: List,
                                   anchors: np.ndarray = None) -> np.ndarray:
     """The function builds a path from a given list of warping paths
     and the anchors used to obtain these paths. The indices of the original
@@ -203,7 +211,7 @@ def build_path_from_warping_paths(warping_paths: list,
 
 
 def find_anchor_indices_in_warping_path(warping_path: np.ndarray,
-                                        anchors: np.ndarray):
+                                        anchors: np.ndarray) -> np.ndarray:
     """Compute the indices in the warping path that corresponds
     to the elements in 'anchors'
 
@@ -249,12 +257,15 @@ def make_path_strictly_monotonic(P: np.ndarray) -> np.ndarray:
     return P_mod.T
 
 
-def evaluate_synchronized_positions(ground_truth_positions: np.ndarray, synchronized_positions: np.ndarray, tolerances: list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 250]):
+def evaluate_synchronized_positions(ground_truth_positions: np.ndarray,
+                                    synchronized_positions: np.ndarray,
+                                    tolerances: List = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 250]):
     """Compute standard evaluation measures for evaluating the quality of synchronized (musical) positions.
 
     When synchronizing two versions of a piece of music, one can evaluate the quality of the resulting alignment
     by comparing errors at musical positions (e.g. beats or measures) that appear in both versions.
-    This function implements two measures: mean absolute error at positions and the percentage of correctly transferred measures given a threshold.
+    This function implements two measures: mean absolute error at positions and the percentage of correctly transferred
+    measures given a threshold.
 
     Parameters
     ----------
@@ -262,7 +273,8 @@ def evaluate_synchronized_positions(ground_truth_positions: np.ndarray, synchron
         Positions (e.g. beat or measure positions) annotated in the target version of a piece of music, in milliseconds.
 
     synchronized_positions: np.ndarray [shape=N]
-        The same musical positions as in 'ground_truth_positions' obtained by transfer using music synchronization, in milliseconds.
+        The same musical positions as in 'ground_truth_positions' obtained by transfer using music synchronization,
+        in milliseconds.
 
     tolerances: list of integers
         Tolerances (in miliseconds) used for comparing annotated and synchronized positions.
@@ -280,7 +292,8 @@ def evaluate_synchronized_positions(ground_truth_positions: np.ndarray, synchron
 
     print('Measure transfer from recording 1 to 2 yielded:')
     mean_absolute_error = np.mean(absolute_errors_at_positions)
-    print('\nMean absolute error (MAE): %.2fms (standard deviation: %.2fms)' % (mean_absolute_error, np.std(absolute_errors_at_positions)))
+    print('\nMean absolute error (MAE): %.2fms (standard deviation: %.2fms)' % (mean_absolute_error,
+                                                                                np.std(absolute_errors_at_positions)))
     print('\nAccuracy of transferred positions at different tolerances:')
     print('\t\t\tAccuracy')
     print('################################')
