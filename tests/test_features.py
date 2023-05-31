@@ -13,8 +13,8 @@ from utils import dict_allclose, filterbank_equal, load_dict
 
 def test_tuning():
     import libfmp.c2  # TODO: This should be removed after the new release of libfmp
-    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', 22050)
-    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', 22050)
+    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', sr=22050)
+    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', sr=22050)
     tuning_offset_1 = estimate_tuning(audio_1, 22050)
     tuning_offset_2 = estimate_tuning(audio_2, 22050)
 
@@ -76,8 +76,8 @@ def test_peak_search():
 
 
 def test_pitch_features():
-    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', 22050)
-    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', 22050)
+    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', sr=22050)
+    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', sr=22050)
     f_pitch_1_gt = np.load('tests/data/f_pitch_1.npy')
     f_pitch_2_gt = np.load('tests/data/f_pitch_2.npy')
 
@@ -98,8 +98,8 @@ def test_pitch_features():
 
 
 def test_pitch_onset_features():
-    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', 22050)
-    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', 22050)
+    audio_1, _ = librosa.load('data_music/Schubert_D911-03_HU33.wav', sr=22050)
+    audio_2, _ = librosa.load('data_music/Schubert_D911-03_SC06.wav', sr=22050)
     f_pitch_onset_1_gt = load_dict('tests/data/f_pitch_onset_1.pickle')
     f_pitch_onset_2_gt = load_dict('tests/data/f_pitch_onset_2.pickle')
 
