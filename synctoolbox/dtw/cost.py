@@ -14,7 +14,7 @@ def cosine_distance(f1, f2, cos_meas_max=2.0, cos_meas_min=1.0):
 
 
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def euclidean_distance(f1, f2, l2_meas_max=1.0, l2_meas_min=0.0):
     """Computes euclidean distances between the vectors in f1 and f2, and
     rescales the results to lie in the range [cos_meas_min, cos_meas_max]."""
