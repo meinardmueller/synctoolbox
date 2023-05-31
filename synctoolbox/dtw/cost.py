@@ -1,5 +1,6 @@
 from numba import jit
 import numpy as np
+from sklearn.metrics.pairwise import euclidean_distances
 
 
 #@jit(nopython=True)
@@ -12,13 +13,13 @@ def cosine_distance(f1, f2, cos_meas_max=2.0, cos_meas_min=1.0):
     return (1 - f1.T @ f2) * (cos_meas_max - cos_meas_min) + cos_meas_min
 
 
+
 @jit(nopython=True)
 def euclidean_distance(f1, f2, l2_meas_max=1.0, l2_meas_min=0.0):
     """Computes euclidean distances between the vectors in f1 and f2, and
     rescales the results to lie in the range [cos_meas_min, cos_meas_max]."""
-    S1 = np.zeros((f1.shape[1], f2.shape[1]))
-    for n in range(f2.shape[1]):
-        S1[:, n] = np.sqrt(np.sum((f1.T - f2[:, n]) ** 2, axis=1))
+
+    S1 = euclidean_distances(f1.T, f2.T)
 
     return S1 * (l2_meas_max - l2_meas_min) + l2_meas_min
 
