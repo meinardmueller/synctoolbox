@@ -131,7 +131,7 @@ def estimate_tuning(x: np.ndarray,
 
     Returns
     -------
-    tuning : float
+    tuning : int
         Estimated tuning deviation for ``x`` (in cents)
     """
     # TODO supply N in seconds and compute window size in frames via Fs

@@ -102,7 +102,8 @@
                                   <span class="n">chroma_norm_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
                                   <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MrMsDTW result&quot;</span><span class="p">,</span>
                                   <span class="n">anchor_pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                  <span class="n">linear_inp_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                                  <span class="n">linear_inp_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+                                  <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Compute memory-restricted multi-scale DTW (MrMsDTW) using chroma and (optionally) onset features.</span>
 <span class="sd">        MrMsDTW is performed on multiple levels that get progressively finer, with rectangular constraint</span>
 <span class="sd">        regions defined by the alignment found on the previous, coarser level.</span>
@@ -182,6 +183,10 @@
 <span class="sd">            Note that index -1 corresponds to the last interval, which begins with</span>
 <span class="sd">            the last anchor pair until the end of the audio files.</span>
 
+<span class="sd">        alpha: float</span>
+<span class="sd">            Coefficient for the Chroma cost matrix in the finest scale of the MrMsDTW algorithm.</span>
+<span class="sd">            C = alpha * C_Chroma + (1 - alpha) * C_act  (default: 0.5)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        wp : np.ndarray [shape=(2, T)]</span>
@@ -203,7 +208,8 @@
                               <span class="n">normalize_chroma</span><span class="o">=</span><span class="n">normalize_chroma</span><span class="p">,</span>
                               <span class="n">chroma_norm_ord</span><span class="o">=</span><span class="n">chroma_norm_ord</span><span class="p">,</span>
                               <span class="n">chroma_norm_threshold</span><span class="o">=</span><span class="n">chroma_norm_threshold</span><span class="p">,</span>
-                              <span class="n">visualization_title</span><span class="o">=</span><span class="n">visualization_title</span><span class="p">)</span>
+                              <span class="n">visualization_title</span><span class="o">=</span><span class="n">visualization_title</span><span class="p">,</span>
+                              <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># constant_intervals = [((0,  x1), (0, y1), False),</span>
         <span class="c1">#                       ((x1, x2), (y1, y2), True),</span>
@@ -216,7 +222,7 @@
         <span class="n">__check_anchor_pairs</span><span class="p">(</span><span class="n">anchor_pairs</span><span class="p">,</span> <span class="n">f_chroma1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">f_chroma2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_feature_rate</span><span class="p">)</span>
 
         <span class="c1"># Add ending as the anchor point</span>
-        <span class="n">anchor_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">f_chroma1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">input_feature_rate</span><span class="p">,</span> <span class="n">f_chroma2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span><span class="n">input_feature_rate</span><span class="p">))</span>
+        <span class="n">anchor_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="n">prev_a1</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">prev_a2</span> <span class="o">=</span> <span class="mi">0</span>
@@ -242,13 +248,15 @@
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;A diagonal warping path is generated for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="s1">&#39;</span>
                           <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">cur_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">,</span> <span class="n">cur_a2</span><span class="p">))</span>
                 <span class="n">wp_cur</span> <span class="o">=</span> <span class="n">__diagonal_warping_path</span><span class="p">(</span><span class="n">f_chroma1_split</span><span class="p">,</span> <span class="n">f_chroma2_split</span><span class="p">)</span>
-                <span class="n">wp_cur</span> <span class="o">*=</span> <span class="n">input_feature_rate</span> <span class="o">/</span> <span class="mi">1000</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MrMsDTW is applied for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">cur_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">,</span> <span class="n">cur_a2</span><span class="p">))</span>
-
+                    <span class="k">if</span> <span class="n">cur_a1</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">cur_a2</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MrMsDTW is applied for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="s1">&#39;</span>
+                              <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">cur_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">,</span> <span class="n">cur_a2</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MrMsDTW is applied for the interval </span><span class="se">\n\t</span><span class="s1"> Feature sequence 1: </span><span class="si">%.2f</span><span class="s1"> - end&#39;</span>
+                              <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1"> Feature sequence 2: </span><span class="si">%.2f</span><span class="s1"> - end</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prev_a1</span><span class="p">,</span> <span class="n">prev_a2</span><span class="p">))</span>
                 <span class="n">wp_cur</span> <span class="o">=</span> <span class="n">sync_via_mrmsdtw</span><span class="p">(</span><span class="n">f_chroma1</span><span class="o">=</span><span class="n">f_chroma1_split</span><span class="p">,</span>
                                           <span class="n">f_chroma2</span><span class="o">=</span><span class="n">f_chroma2_split</span><span class="p">,</span>
                                           <span class="n">f_onset1</span><span class="o">=</span><span class="n">f_onset1_split</span><span class="p">,</span>
@@ -263,7 +271,8 @@
                                           <span class="n">dtw_implementation</span><span class="o">=</span><span class="n">dtw_implementation</span><span class="p">,</span>
                                           <span class="n">normalize_chroma</span><span class="o">=</span><span class="n">normalize_chroma</span><span class="p">,</span>
                                           <span class="n">chroma_norm_ord</span><span class="o">=</span><span class="n">chroma_norm_ord</span><span class="p">,</span>
-                                          <span class="n">chroma_norm_threshold</span><span class="o">=</span><span class="n">chroma_norm_threshold</span><span class="p">)</span>
+                                          <span class="n">chroma_norm_threshold</span><span class="o">=</span><span class="n">chroma_norm_threshold</span><span class="p">,</span>
+                                          <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">wp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">wp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">wp_cur</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -274,6 +283,8 @@
 
             <span class="n">prev_a1</span> <span class="o">=</span> <span class="n">cur_a1</span>
             <span class="n">prev_a2</span> <span class="o">=</span> <span class="n">cur_a2</span>
+
+        <span class="n">anchor_pairs</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">wp</span></div>
 
@@ -356,6 +367,10 @@
 <span class="sd">        visualization_title : str</span>
 <span class="sd">            Title for the visualization plots. Only relevant if &#39;verbose&#39; is True</span>
 <span class="sd">            (default: &quot;MrMsDTW result&quot;)</span>
+
+<span class="sd">        alpha: float</span>
+<span class="sd">            Coefficient for the Chroma cost matrix in the finest scale of the MrMsDTW algorithm.</span>
+<span class="sd">            C = alpha * C_Chroma + (1 - alpha) * C_act  (default: 0.5)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -541,11 +556,17 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray: Diagonal warping path [shape=(2, T)]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">max_size</span> <span class="o">==</span> <span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">))])</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">f2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">min_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">f2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">min_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">max_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">max_size</span> <span class="o">==</span> <span class="n">f1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_size</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_size</span><span class="p">)])</span>
+
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f1</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_size</span><span class="p">))])</span>
 
 
 <span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -577,18 +598,34 @@
                      <span class="n">prev_a2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                      <span class="n">feature_rate</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
 
-    <span class="c1"># Split the features</span>
-    <span class="n">f_chroma1_split</span> <span class="o">=</span> <span class="n">f_chroma1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">f_onset1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="n">f_onset1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">cur_a1</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">f_chroma1_split</span> <span class="o">=</span> <span class="n">f_chroma1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">f_onset1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="n">f_onset1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">f_chroma2_split</span> <span class="o">=</span> <span class="n">f_chroma2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">f_onset2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="n">f_onset2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Split the features</span>
+        <span class="n">f_chroma1_split</span> <span class="o">=</span> <span class="n">f_chroma1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">f_onset1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="n">f_onset1</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a1</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_onset1_split</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">cur_a2</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">f_chroma2_split</span> <span class="o">=</span> <span class="n">f_chroma2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">f_onset2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="n">f_onset2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f_chroma2_split</span> <span class="o">=</span> <span class="n">f_chroma2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">f_onset2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="n">f_onset2</span><span class="p">[:,</span> <span class="nb">int</span><span class="p">(</span><span class="n">prev_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">cur_a2</span> <span class="o">*</span> <span class="n">feature_rate</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_onset2_split</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">return</span> <span class="n">f_chroma1_split</span><span class="p">,</span> <span class="n">f_onset1_split</span><span class="p">,</span> <span class="n">f_chroma2_split</span><span class="p">,</span> <span class="n">f_onset2_split</span>
 

@@ -13,6 +13,7 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -112,7 +113,7 @@
                                   <span class="n">Fs</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">22050</span><span class="p">,</span>
                                   <span class="n">midi_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
                                   <span class="n">midi_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">108</span><span class="p">,</span>
-                                  <span class="n">tuning_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">tuning_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                                   <span class="n">manual_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span>
                                   <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                   <span class="n">visualization_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Pitch onset features&quot;</span><span class="p">,</span>
@@ -135,7 +136,7 @@
 <span class="sd">    midi_max : int</span>
 <span class="sd">        Maximum MIDI index (indices above ``midi_max`` are filled with zero in the output)</span>
 
-<span class="sd">    tuning_offset : float</span>
+<span class="sd">    tuning_offset : int</span>
 <span class="sd">        Tuning offset used to shift the filterbank (in cents)</span>
 
 <span class="sd">    manual_offset : int</span>
