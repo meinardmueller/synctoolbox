@@ -22,7 +22,7 @@ FILTERBANK_SETTINGS = [
 FS_PITCH = [22050, 4410, 882]
 
 
-def generate_filterbank(semitone_offset_cents: float = 0.0,
+def generate_filterbank(semitone_offset_cents: int = 0,
                         Q: float = 25.0,
                         stop: float = 2.0,
                         Rp: float = 1.0,
