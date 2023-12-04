@@ -2,9 +2,13 @@ name: Python Package using Conda
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - numba_version
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - numba_version
 
 jobs:
   build-linux:
