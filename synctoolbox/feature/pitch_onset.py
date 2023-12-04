@@ -39,7 +39,7 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
                                   Fs: float = 22050,
                                   midi_min: int = 21,
                                   midi_max: int = 108,
-                                  tuning_offset: float = 0,
+                                  tuning_offset: int = 0,
                                   manual_offset: float = -25,
                                   verbose: bool = False,
                                   visualization_title: str = "Pitch onset features",
@@ -62,7 +62,7 @@ def audio_to_pitch_onset_features(f_audio: np.ndarray,
     midi_max : int
         Maximum MIDI index (indices above ``midi_max`` are filled with zero in the output)
 
-    tuning_offset : float
+    tuning_offset : int
         Tuning offset used to shift the filterbank (in cents)
 
     manual_offset : int

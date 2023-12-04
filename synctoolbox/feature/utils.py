@@ -102,7 +102,7 @@ def estimate_tuning(x: np.ndarray,
                     gamma: float = 100,
                     local: bool = True,
                     filt: bool = True,
-                    filt_len: int = 101) -> float:
+                    filt_len: int = 101) -> int:
     """Compute tuning deviation in cents for an audio signal. Convenience wrapper around
     'compute_freq_distribution' and 'tuning_similarity' from libfmp.
 
