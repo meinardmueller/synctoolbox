@@ -46,7 +46,7 @@ def spectral_flux(f_audio: np.ndarray,
                      n_fft=window_size,
                      hop_length=hop_size,
                      win_length=window_size,
-                     window='hanning')
+                     window='hann')
 
     Y = np.log(1 + gamma * np.abs(X))
     Y_diff = np.diff(Y, n=1)

@@ -5,9 +5,9 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.7.*
-  - ipython=7.8.*
-  - jupyter=1.0.*  
+  - python>=3.8.0, <4.0.0
+  - ipython
+  - jupyter
 
   - pip:
     - synctoolbox==1.2.*
