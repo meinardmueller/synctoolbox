@@ -6,7 +6,7 @@ with open('README.md', 'r') as fdesc:
 
 setup(
     name='synctoolbox',
-    version='1.3.1',
+    version='1.3.2',
     description='Python Package for Efficient, Robust, and Accurate Music Synchronization (SyncToolbox)',
     author='Meinard Müller, Yigitcan Özer, Michael Krause, Thomas Prätzlich and Jonathan Driedger',
     author_email='meinard.mueller@audiolabs-erlangen.de',
@@ -24,7 +24,7 @@ setup(
     ],
     keywords='audio music sound synchronization dtw mrmsdtw',
     license='MIT',
-    install_requires=['ipython >= 7.8.0, < 8.0.0',
+    install_requires=['ipython >= 7.10.0, < 8.0.0',
                       'librosa >= 0.8.0, < 1.0.0',
                       'matplotlib >= 3.1.0, < 4.0.0',
                       'music21 >= 5.7.0, < 6.0.0',
