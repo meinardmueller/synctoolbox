@@ -35,7 +35,7 @@ setup(
                       'pysoundfile >= 0.9.0, < 1.0.0',
                       'scipy >= 1.7.0, < 2.0.0',
                       'libfmp >= 1.2.0, < 2.0.0'],
-    python_requires='>=3.7, <4.0',
+    python_requires='>=3.8, <4.0',
     extras_require={
         'tests': ['pytest == 6.2.*'],
         'docs': ['sphinx == 4.0.*',
