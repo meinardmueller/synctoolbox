@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - master
-      - stepsize_bugfix
   pull_request:
     branches:
       - master
-      - stepsize_bugfix
 
 jobs:
   build-linux:
