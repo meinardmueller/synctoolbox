@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - master
-      - numba_version
+      - stepsize_bugfix
   pull_request:
     branches:
       - master
-      - numba_version
+      - stepsize_bugfix
 
 jobs:
   build-linux:
