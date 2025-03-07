@@ -201,5 +201,27 @@ def compute_warping_path(C: np.ndarray,
     else:
         raise NotImplementedError(f'No implementation found called {implementation}')
 
+    if np.abs(C[0,0] - 1.29213666) < 0.000001:
+        pass
+        print(wp)
+
+    if (wp < 0).any():
+        print(f"Shape of current warping path: {wp.shape}")  # Debugging output
+        neg_indices = np.where(wp < 0)  # Get row and column indices
+        neg_values = wp[neg_indices]  # Get corresponding negative values
+
+        # Convert indices to a list of tuples (row, col)
+        neg_indices_list = list(zip(neg_indices[0], neg_indices[1]))
+
+        raise ValueError(
+            f'Warping path must be non-negative. '
+            f'Found negative values at indices {neg_indices_list}: {neg_values.tolist()}. '
+            f'\nConsider using another set of step sizes.'
+        )
+
+    if (np.diff(wp) < 0).any():
+        raise ValueError('Warping path must be monotonically increasing. '
+                         'Consider using another set of step sizes.')
+
     return D, E, wp
 

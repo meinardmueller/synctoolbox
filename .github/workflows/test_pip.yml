@@ -7,11 +7,9 @@ on:
   push:
     branches:
       - master
-      - numba_version
   pull_request:
     branches:
       - master
-      - numba_version
 
 jobs:
   build:
@@ -40,7 +38,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8
-        python -m pip install -e .['tests']
+        python -m pip install .['test']
         python --version
         pip --version
         python -m pip list
