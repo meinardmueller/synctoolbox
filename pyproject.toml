@@ -1,0 +1,56 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[project]
+name = "synctoolbox"
+version = "1.4.0"
+description = "Python Package for Efficient, Robust, and Accurate Music Synchronization (Sync Toolbox)"
+readme = "README.md"
+requires-python = ">=3.8, <3.13.0"
+license = {text = "MIT"}
+authors = [
+    {name = "Meinard Müller", email = "meinard.mueller@audiolabs-erlangen.de"},
+    {name = "Yigitcan Özer"},
+    {name = "Michael Krause"},
+    {name = "Thomas Prätzlich"},
+    {name = "Jonathan Driedger"}
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "librosa >= 0.8.0, < 1.0.0",
+    "matplotlib >= 3.1.0, < 4.0.0",
+    "music21 >= 5.7.0, < 6.0.0",
+    "numba >= 0.58.1, < 0.60.0",
+    "numpy >= 1.17.0, < 2.0.0",
+    "pandas >= 1.0.0, < 2.0.0",
+    "pretty_midi >= 0.2.0, < 1.0.0",
+    "soundfile >= 0.9.0, < 1.0.0",
+    "scipy >= 1.7.0, < 2.0.0",
+    "libfmp >= 1.2.0, < 2.0.0"
+]
+
+[project.optional-dependencies]
+develop = [
+    "flit >= 3.10.0",
+    "ipython >= 8.10.0",
+    "jupyter",
+    "nbstripout"
+]
+test = ["pytest == 6.2.*"]
+doc = [
+    "sphinx == 4.0.*",
+    "sphinx_rtd_theme == 0.5.*"
+]
+
+[project.urls]
+Homepage = "https://github.com/meinardmueller/synctoolbox"
+Repository = "https://github.com/meinardmueller/synctoolbox"
+Download = "https://github.com/meinardmueller/synctoolbox"
+Documentation = "https://meinardmueller.github.io/synctoolbox/build/html/index.html"
