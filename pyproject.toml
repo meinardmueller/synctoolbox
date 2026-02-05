@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "synctoolbox"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python Package for Efficient, Robust, and Accurate Music Synchronization (Sync Toolbox)"
 readme = "README.md"
 requires-python = ">=3.8, <3.13.0"
