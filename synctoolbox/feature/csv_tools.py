@@ -10,6 +10,15 @@ from synctoolbox.feature.pitch_onset import __f_peaks_to_matrix
 import matplotlib.pyplot as plt
 
 
+def __get_part_instrument_name(part: music21.stream.Part) -> str:
+    """Return a stable instrument label across music21 versions."""
+    instrument = part.getInstrument(returnDefault=True)
+    if instrument is None:
+        return "Unknown"
+
+    return instrument.partName or instrument.instrumentName or instrument.bestName() or "Unknown"
+
+
 def read_csv_to_df(csv_filepath: str = '',
                    csv_delimiter: str = ';') -> pd.DataFrame:
     """Reads .csv file containing symbolic music into a pandas DataFrame.
@@ -341,7 +350,6 @@ def music_xml_to_csv_musical_time(xml, csv_filepath: str):
         csv_filepath : str
             Filepath to the .csv file.
     """
-
     if isinstance(xml, str):
         xml_data = music21.converter.parse(xml)
     elif isinstance(xml, music21.stream.Score):
@@ -361,11 +369,11 @@ def music_xml_to_csv_musical_time(xml, csv_filepath: str):
     score = []
     # First, get starts and ends of notes in terms of quarters (similar to 'xml_to_list' in libfmp)
     for part in xml_data.parts:
-        instrument = part.getInstrument().partName  # Other interesting properties may be instrumentName and midiProgram, but often, these are not set correctly
-        for note in part.flat.notes:
+        instrument = __get_part_instrument_name(part)
+        for note in part.flatten().notes:
             start = note.offset
             end = note.offset + note.quarterLength
-            if note.isChord:
+            if isinstance(note, music21.chord.Chord):
                 for chord_note in note.pitches:
                     pitch = chord_note.ps
                     volume = note.volume.realized

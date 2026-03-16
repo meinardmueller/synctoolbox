@@ -7,7 +7,7 @@ name = "synctoolbox"
 version = "1.4.1"
 description = "Python Package for Efficient, Robust, and Accurate Music Synchronization (Sync Toolbox)"
 readme = "README.md"
-requires-python = ">=3.8, <3.13.0"
+requires-python = ">=3.10, <3.13.0"
 license = {text = "MIT"}
 authors = [
     {name = "Meinard Müller", email = "meinard.mueller@audiolabs-erlangen.de"},
@@ -24,12 +24,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "librosa >= 0.8.0, < 1.0.0",
+    "librosa >= 0.10.0, < 1.0.0",
     "matplotlib >= 3.1.0, < 4.0.0",
-    "music21 >= 5.7.0, < 6.0.0",
+    "music21 >= 9.1.0, < 10.0.0",
     "numba >= 0.58.1, < 0.60.0",
     "numpy >= 1.17.0, < 2.0.0",
-    "pandas >= 1.0.0, < 2.0.0",
+    "pandas >= 2.1.0, < 3.0.0",
     "pretty_midi >= 0.2.0, < 1.0.0",
     "soundfile >= 0.9.0, < 1.0.0",
     "scipy >= 1.7.0, < 2.0.0",
