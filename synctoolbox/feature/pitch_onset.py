@@ -195,8 +195,7 @@ def __f_peaks_to_matrix(max_length_sec, f_peaks, highest_time_res, midi_max, mid
             continue
 
         for k in range(f_peaks[midi_pitch].shape[1]):
-            timecoord = np.minimum(__ms2imagecoord(f_peaks[midi_pitch][0, k], highest_time_res), time_grid_width) \
-                .astype(int)
+            timecoord = int(np.minimum(__ms2imagecoord(f_peaks[midi_pitch][0, k], highest_time_res), time_grid_width))
             imagedata[np.maximum(1, np.arange(timecoord - 3, timecoord + 4)), midi_pitch - midi_min] = \
                 f_peaks[midi_pitch][1, k]
     return imagedata
@@ -205,6 +204,7 @@ def __f_peaks_to_matrix(max_length_sec, f_peaks, highest_time_res, midi_max, mid
 def __ms2imagecoord(timems: float,
                     highest_time_res: float) -> float:
     """Round ``timems`` onto a discrete grid defined by 'highest_time_res'"""
+    timems = float(np.asarray(timems).squeeze())
     coord = np.round(timems / (highest_time_res * 1000))
     return coord
 

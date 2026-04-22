@@ -71,8 +71,8 @@ def pitch_onset_features_to_DLNCO(f_peaks: dict,
     for midi_pitch in range(midi_min, midi_max + 1):
         if midi_pitch not in f_peaks:
             continue
-        time_peaks = f_peaks[midi_pitch][0, :] / 1000  # Now given in seconds
-        val_peaks = np.log(f_peaks[midi_pitch][1, :] * log_compression_gamma + 1)
+        time_peaks = np.asarray(f_peaks[midi_pitch][0, :] / 1000).reshape(-1)  # Now given in seconds
+        val_peaks = np.asarray(np.log(f_peaks[midi_pitch][1, :] * log_compression_gamma + 1)).reshape(-1)
         ind_chroma = np.mod(midi_pitch, 12)
         for k in range(time_peaks.size):
             indTime = __matlab_round(time_peaks[k] * feature_rate)  # Usage of "round" accounts
@@ -166,6 +166,7 @@ def __visualize_LN_features(f_N: np.ndarray,
 
 def __matlab_round(x: float = None) -> int:
     """Workaround to cope the rounding differences between MATLAB and python"""
+    x = float(np.asarray(x).squeeze())
     if x - np.floor(x) < 0.5:
         return int(np.floor(x))
     else:
