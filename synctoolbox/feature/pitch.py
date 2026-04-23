@@ -1,6 +1,5 @@
 from libfmp.b import plot_matrix
 import numpy as np
-from numba import jit
 import matplotlib.pyplot as plt
 from scipy import signal
 
@@ -118,10 +117,9 @@ def audio_to_pitch_features(f_audio: np.ndarray,
     return f_pitch
 
 
-@jit(nopython=True)
 def __window_and_sum(f_pitch, f_square, midi_pitch, seg_wav_num, start, stop, factor):
-    for k in range(seg_wav_num):  # TODO this is extremely inefficient, can we use better numpy indexing to improve this? np.convolve?
-        f_pitch[midi_pitch, k] = np.sum(f_square[start[k]:stop[k]]) * factor
+    prefix_sum = np.concatenate([np.zeros(1, dtype=f_square.dtype), np.cumsum(f_square)])
+    f_pitch[midi_pitch, :seg_wav_num] = (prefix_sum[stop] - prefix_sum[start]) * factor
 
 
 def __visualize_pitch(f_pitch: np.ndarray,
@@ -151,4 +149,3 @@ def __visualize_pitch(f_pitch: np.ndarray,
     else:
         ax[0].set_yticks(pitchscale[::2])
         ax[0].set_yticklabels(pitchscale[::2], fontsize=10)
-

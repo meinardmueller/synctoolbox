@@ -1,5 +1,4 @@
 from libfmp.c3 import compute_freq_distribution, tuning_similarity
-from numba import jit
 import numpy as np
 from scipy import signal
 from typing import Tuple
@@ -52,7 +51,6 @@ def smooth_downsample_feature(f_feature: np.ndarray,
     return f_feature_stat, new_feature_rate
 
 
-@jit(nopython=True)
 def normalize_feature(feature: np.ndarray,
                       norm_ord: int,
                       threshold: float) -> np.ndarray:
@@ -77,21 +75,17 @@ def normalize_feature(feature: np.ndarray,
     f_normalized : np.ndarray
         Normalized feature sequence
     """
-    # TODO rewrite in vectorized fashion
     d, N = feature.shape
-    f_normalized = np.zeros((d, N))
 
     # normalize the vectors according to the l^norm_ord norm
     unit_vec = np.ones(d)
     unit_vec = unit_vec / np.linalg.norm(unit_vec, norm_ord)
 
-    for k in range(N):
-        cur_norm = np.linalg.norm(feature[:, k], norm_ord)
-
-        if cur_norm < threshold:
-            f_normalized[:, k] = unit_vec
-        else:
-            f_normalized[:, k] = feature[:, k] / cur_norm
+    norms = np.linalg.norm(feature, ord=norm_ord, axis=0)
+    below_threshold = norms < threshold
+    safe_norms = np.where(below_threshold, 1.0, norms)
+    f_normalized = feature / safe_norms.reshape(1, N)
+    f_normalized[:, below_threshold] = unit_vec.reshape(d, 1)
 
     return f_normalized
 
