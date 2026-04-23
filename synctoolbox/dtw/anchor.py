@@ -1,4 +1,3 @@
-from numba import jit
 import numpy as np
 from typing import Tuple
 
@@ -137,11 +136,9 @@ def derive_neighboring_anchors(warping_path: np.ndarray,
     return neighboring_anchors, neighboring_anchor_indices
 
 
-@jit(nopython=True)
 def __compute_area(a: tuple,
                    b: tuple):
     """Computes the area between two points, given as tuples"""
     return (b[0] - a[0] + 1) * (b[1] - a[1] + 1)
-
 
 

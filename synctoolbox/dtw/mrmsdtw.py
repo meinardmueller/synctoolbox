@@ -1,4 +1,3 @@
-from numba import jit
 import numpy as np
 import time
 from typing import List, Tuple, Optional
@@ -495,7 +494,6 @@ def __diagonal_warping_path(f1: np.ndarray,
         return np.array([np.linspace(0, min_size-1, min_size), np.round(np.linspace(0, max_size - 1, min_size))])
 
 
-@jit(nopython=True)
 def __compute_area(f1, f2):
     """Computes the area of the cost matrix given two feature sequences
 

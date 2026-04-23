@@ -1,9 +1,7 @@
-from numba import jit
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
 
 
-#@jit(nopython=True)
 def cosine_distance(f1, f2, cos_meas_max=2.0, cos_meas_min=1.0):
     """For all pairs of vectors f1' and f2' in f1 and f2, computes 1 - (f1.f2),
     where '.' is the dot product, and rescales the results to lie in the
@@ -13,8 +11,6 @@ def cosine_distance(f1, f2, cos_meas_max=2.0, cos_meas_min=1.0):
     return (1 - f1.T @ f2) * (cos_meas_max - cos_meas_min) + cos_meas_min
 
 
-
-#@jit(nopython=True)
 def euclidean_distance(f1, f2, l2_meas_max=1.0, l2_meas_min=0.0):
     """Computes euclidean distances between the vectors in f1 and f2, and
     rescales the results to lie in the range [cos_meas_min, cos_meas_max]."""
@@ -76,4 +72,3 @@ def compute_high_res_cost_matrix(f_chroma1: np.ndarray,
     euc_dis = euclidean_distance(f_onset1, f_onset2, l2_meas_min=l2_meas_min, l2_meas_max=l2_meas_max)
 
     return weights[0] * cos_dis + weights[1] * euc_dis
-
